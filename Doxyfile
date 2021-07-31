@@ -272,16 +272,20 @@ TAB_SIZE               = 4
 ALIASES  = "cast=\xrefitem cast \"Cast\" \"Cast list\""
 ALIASES += "fixme=\xrefitem fixme \"Fix me\" \"Fix me list\""
 ALIASES += "cc=@code{.c}"
-ALIASES += "endcc=@endcode"
+ALIASES += "ecc=@endcode"
+ALIASES += "cc{1}=@code{.c}\1@endcode"
 ALIASES += "v=@code{.unparsed}"
-ALIASES += "endv=@endcode"
+ALIASES += "ev=@endcode"
+ALIASES += "v{1}=@code{.unparsed}\1@endcode"
 ALIASES += "C17=https://web.archive.org/web/20181230041359if_/http://www.open-std.org/jtc1/sc22/wg14/www/abq/c17_updated_proposed_fdis.pdf"
-ALIASES += "C17{2}=[C17 \1](@C17\2)"
+ALIASES += "C17{1}=[C17 Standard (ISO/IEC 9899:2017) \1](@C17#subsection.\1)"
 ALIASES += "success=<b style=\"color:green\">On success</b>"
 ALIASES += "failure=<b style=\"color:red\">On failure</b>"
 ALIASES += "p{1}=<span class=\"params\"><span class=\"paramname\">\1</span></span>"
-ALIASES += "usage{1}=@par Usage^^ @cc \1 @endcc"
-ALIASES += "licence{1}=@par Licence^^ @v \1 @endv"
+ALIASES += "usage{1}=@par Usage^^ @cc{\1}"
+ALIASES += "licence{1}=@par Licence^^ @v{\1}"
+ALIASES += "expansion{1}=@par Expansion^^ `=>` means \"expands to\"^^ @cc{\1}"
+ALIASES += "i{1}=<em>\1</em>"
 
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
@@ -981,7 +985,10 @@ EXCLUDE_SYMLINKS       = NO
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories for example use the pattern */test/*
 
-EXCLUDE_PATTERNS       =
+EXCLUDE_PATTERNS  = */dep/*
+EXCLUDE_PATTERNS += */test/*
+EXCLUDE_PATTERNS += *include/generated/*
+EXCLUDE_PATTERNS += *include/impl/*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
@@ -1765,7 +1772,7 @@ EXTRA_SEARCH_MAPPINGS  =
 # If the GENERATE_LATEX tag is set to YES, doxygen will generate LaTeX output.
 # The default value is: YES.
 
-GENERATE_LATEX         = YES
+GENERATE_LATEX         = NO
 
 # The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put. If a
 # relative path is entered the value of OUTPUT_DIRECTORY will be put in front of

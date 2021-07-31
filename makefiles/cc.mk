@@ -1,7 +1,12 @@
 ################################################################################
 # CC
+#
+# [R]: Single value variable can be redefined in other makefiles
+# [+]: Values can be added to the variable in other makefiles
+# [X]: Variable must not be redefined nor values be added to it
 ################################################################################
-CC := gcc-11
+# The compiler to use                                                        [R]
+CC := gcc
 # Warning options for gcc 11.1.0
 # https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 # Enable the bare minimum number of warnings to write C
@@ -125,9 +130,9 @@ CC_WARNING += -Wvla
 CC_WARNING += -Wwrite-strings
 CC_WARNING += -D_FORTIFY_SOURCE=2
 # Treat -Wpedantic warnings as errors
-CC_ERROR     := -pedantic-errors
+CC_ERROR := -pedantic-errors
 # Treat all warnings as errors
-CC_ERROR     += #-Werror
+CC_ERROR += #-Werror
 CC_C_VERSION := -std=c17
 # Default build mode is debug
 CC_DEBUG := -g3
@@ -170,9 +175,9 @@ COMPILE += $<
 COMPILE += -c -fPIC
 COMPILE += $(CFLAGS)
 COMPILE += $(CPPFLAGS)
-# Extra flags (-Lfoo) for the compilator when invoking the linker
+# Extra flags (-Lfoo) for the compiler when invoking the linker
 LDFLAGS = $(EXTERNAL_LIB_DIRS:%=-L%)
-# Libs name (-lfoo) for the compilator when invoking the linker
+# Libs name (-lfoo) for the compiler when invoking the linker
 # Must be put at the very end of a link command
 LDLIBS  =
 # Command to link *.o files into a program
