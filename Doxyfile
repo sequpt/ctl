@@ -283,10 +283,10 @@ ALIASES += "success=<b style=\"color:green\">On success</b>"
 ALIASES += "failure=<b style=\"color:red\">On failure</b>"
 ALIASES += "p{1}=<span class=\"params\"><span class=\"paramname\">\1</span></span>"
 ALIASES += "usage{1}=@par Usage^^ @cc{\1}"
-ALIASES += "licence{1}=@par Licence^^ @v{\1}"
+ALIASES += "license{1}=@par License^^ @v{\1}"
 ALIASES += "expansion{1}=@par Expansion^^ `=>` means \"expands to\"^^ @cc{\1}"
 ALIASES += "i{1}=<em>\1</em>"
-
+ALIASES += "example{1}=@par Example^^ @cc{\1}"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
@@ -969,7 +969,11 @@ RECURSIVE              = YES
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                =
+EXCLUDE  = dep
+EXCLUDE += include/generated
+EXCLUDE += include/impl
+EXCLUDE += test
+EXCLUDE += tool
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -985,10 +989,7 @@ EXCLUDE_SYMLINKS       = NO
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories for example use the pattern */test/*
 
-EXCLUDE_PATTERNS  = */dep/*
-EXCLUDE_PATTERNS += */test/*
-EXCLUDE_PATTERNS += *include/generated/*
-EXCLUDE_PATTERNS += *include/impl/*
+EXCLUDE_PATTERNS        =
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
