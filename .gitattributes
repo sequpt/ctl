@@ -1,0 +1,7 @@
+# Ensure new text files committed will have their line endings set to `LF`.
+* text=auto
+
+# Ensure headers are recognized as C files instead of C++.
+# GitLab documents the use of `gitlab-language` but `linguist-language`(GitHub)
+# works as well.
+*.h linguist-language=c
