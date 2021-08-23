@@ -5,16 +5,30 @@
 # [+]: Values can be added to the variable in other makefiles
 # [X]: Variable must not be redefined nor values be added to it
 ################################################################################
-# The compiler to use                                                        [R]
-CC := gcc
+# Compiler name                                                              [R]
+CC_NAME := gcc
+# Compiler version                                                           [R]
+CC_VERSION ?= 11
+# Set CC to `name-version` if CC_VERSION isn't empty or to `name` otherwise
+ifeq ($(strip $(CC_VERSION)),)
+CC = $(CC_NAME)
+else
+CC = $(CC_NAME)-$(CC_VERSION)
+endif
+################################################################################
+# WARNING
+#
 # Warning options for gcc 11.1.0
 # https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+################################################################################
 # Enable the bare minimum number of warnings to write C
 CC_WARNING += -Wall
 # calloc/malloc/realloc(0) (behavior is implementation defined)
 CC_WARNING += -Walloc-zero
 # Implicit conversions from arithmetic operations
+ifeq ($(CC),$(filter $(CC),gcc-11))
 CC_WARNING += -Warith-conversion
+endif
 # Warn for out of bounds access to arrays at the end of a struct and when arrays
 # are accessed through pointers
 # May give false positives
@@ -23,10 +37,14 @@ CC_WARNING += -Warray-bounds=2
 # Function call is cast to the wrong type
 CC_WARNING += -Wbad-function-cast
 # C2x features not present in C11
+ifeq ($(CC),$(filter $(CC),gcc-11))
 CC_WARNING += -Wc11-c2x-compat
+endif
 # Pointer is cast to a type with stricter alignment
 # Warn even for platform allowing missaligned memory access(x86)
+ifeq ($(CC),$(filter $(CC),gcc-8 gcc-9 gcc-10 gcc-11))
 CC_WARNING += -Wcast-align=strict
+endif
 # Pointer is cast to remove a type qualifier
 CC_WARNING += -Wcast-qual
 # Implicit cast that may change the value
@@ -133,13 +151,21 @@ CC_WARNING += -D_FORTIFY_SOURCE=2
 CC_ERROR := -pedantic-errors
 # Treat all warnings as errors
 CC_ERROR += #-Werror
+# Set the C version to the latest standard supported by the compiler used.
+ifeq ($(CC),$(filter $(CC),gcc-8 gcc-9 gcc-10 gcc-11))
 CC_C_VERSION := -std=c17
+else
+CC_C_VERSION := -std=c11
+endif
 # Default build mode is debug
 CC_DEBUG := -g3
-CC_OPTIMIZATION := -O1
+# Og is a level of optimization specially made for debug.
+CC_OPTIMIZATION := -Og
 CC_PROFILING    := #-pg
-# Valgrind doesn't seem to work properly on executables build with --coverage
-CC_COVERAGE  := #--coverage
+# Valgrind doesn't seem to work properly on executables build with --coverage.
+# Invoke -fprofile-arcs -ftest-coverage(when compiling) and -lcov(when linking).
+# Create *.gcno files.
+CC_COVERAGE := --coverage
 # Directories to be used with the -I option
 CC_IDIRS  = $(SRC_DIRS:%=-I%)
 CC_IDIRS += $(INC_DIRS:%=-I%)
@@ -197,7 +223,16 @@ LINK_SHARED += $(LDLIBS)
 ################################################################################
 # AR
 ################################################################################
-AR := gcc-ar-11
+# Archiver name                                                              [R]
+AR_NAME := gcc-ar
+# Archiver version                                                           [R]
+AR_VERSION ?= $(CC_VERSION)
+# Set AR to `name-version` if AR_VERSION isn't empty or to `name` otherwise
+ifeq ($(strip $(CC_VERSION)),)
+AR = $(AR_NAME)
+else
+AR = $(AR_NAME)-$(AR_VERSION)
+endif
 # Extra flags to give to ar
 ARFLAGS  = -rcs
 # Command to archive *.o files
