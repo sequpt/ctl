@@ -403,6 +403,37 @@
  */
 #define ctl_DynArray_Clear(array)                                              \
     CTL_DYN_ARRAY_FUNC(array, Clear)(array)
+/*------------------------------------------------------------------------------
+    ctl_DynArray_Resize()
+------------------------------------------------------------------------------*/
+/**
+ * Resizes an \p{array} to a given size.
+ *
+ * - The \p{array} capacity is increased if \p{size} is greater than the current
+ *   capacity.
+ * - The \p{array} is truncated to its first \p{size} elements if \p{size} is
+ *   smaller than the current size. Capacity stays unchanged.
+ * - Nothing happens if \p{size} is equal to the current size.
+ *
+ * @param[in,out] array : Pointer to the array.
+ * @param[in]     size  : New size wanted.
+ *
+ * @return Nothing.
+ *
+ * @warning
+ * - \p{array} must be a valid pointer to an array created with
+ * ctl_DynArray_Create().
+ * - \p{size} must be an integer in the range `[0; SIZE_MAX]`.
+ *
+ * @example{
+ *  CTL_DYN_ARRAY(int) * array = ctl_DynArray_Create(array);
+ *  ctl_DynArray_PushBack(array, 7); // size = 1 , capacity = 1
+ *  ctl_DynArray_Resize(array, 10);  // size = 10, capacity = 10
+ *  ctl_DynArray_Resize(array, 3);   // size = 3 , capacity = 10
+ * }
+ */
+#define ctl_DynArray_Resize(array, size) \
+    CTL_DYN_ARRAY_FUNC(array, Resize)(array, size)
 /*==============================================================================
     GUARD
 ==============================================================================*/

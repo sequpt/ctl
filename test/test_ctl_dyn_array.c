@@ -75,6 +75,7 @@ void TEST_ctl_DynArray_Front(void);
 void TEST_ctl_DynArray_PushFront(void);
 void TEST_ctl_DynArray_PopFront(void);
 void TEST_ctl_DynArray_Insert(void);
+void TEST_ctl_DynArray_Resize(void);
 /*==============================================================================
     FUNCTION DEFINITION
 ==============================================================================*/
@@ -98,6 +99,7 @@ void TEST_CTL_DYN_ARRAY(void)
     TEST_ctl_DynArray_PushFront();
     TEST_ctl_DynArray_PopFront();
     TEST_ctl_DynArray_Insert();
+    TEST_ctl_DynArray_Resize();
 }
 /*==============================================================================
     FUNCTION DEFINITION
@@ -449,4 +451,37 @@ void TEST_ctl_DynArray_Insert(void)
         assert(ctl_DynArray_Size(array8) == obj_cnt + i + 1);
     }
     DESTROY(array8);
+}
+void TEST_ctl_DynArray_Resize(void)
+{
+    CREATE(array0);
+    size_t obj_cnt = 10;
+    // Initial state
+    for(size_t i = 0; i < obj_cnt; i++) {
+        ctl_DynArray_PushBack(array0, (int)i);
+    }
+    const size_t capacity = ctl_DynArray_Capacity(array0);
+    // new size > current size
+    ctl_DynArray_Resize(array0, 50);
+    for(size_t i = 0; i < obj_cnt; i++) {
+        assert(ctl_DynArray_At(array0, i) == (int)i);
+    }
+    const size_t new_capacity = ctl_DynArray_Capacity(array0);
+    assert(new_capacity > capacity);
+    // new size < current size
+    obj_cnt = 5;
+    ctl_DynArray_Resize(array0, obj_cnt);
+    for(size_t i = 0; i < obj_cnt; i++) {
+        assert(ctl_DynArray_At(array0, i) == (int)i);
+    }
+    assert(ctl_DynArray_Size(array0) == obj_cnt);
+    assert(new_capacity == ctl_DynArray_Capacity(array0));
+    // new size == current size
+    ctl_DynArray_Resize(array0, obj_cnt);
+    for(size_t i = 0; i < obj_cnt; i++) {
+        assert(ctl_DynArray_At(array0, i) == (int)i);
+    }
+    assert(ctl_DynArray_Size(array0) == obj_cnt);
+    assert(new_capacity == ctl_DynArray_Capacity(array0));
+    DESTROY(array0);
 }

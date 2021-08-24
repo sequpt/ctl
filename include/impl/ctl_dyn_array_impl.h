@@ -368,6 +368,22 @@
         assert(adt != NULL);                                                   \
         adt->front = adt->start;                                               \
         adt->back  = adt->start;                                               \
+    }                                                                          \
+    void ADT##_Resize(ADT * const adt, const size_t size)                      \
+    {                                                                          \
+        assert(adt != NULL);                                                   \
+        const size_t capacity = ADT##_Capacity(adt);                           \
+        if(size > capacity) {                                                  \
+            T * const start = realloc(adt->start, sizeof(T) * size);           \
+            if(start != NULL) {                                                \
+                adt->start = adt->front = start;                               \
+                adt->end   = adt->back  = start + size;                        \
+            } else {                                                           \
+                fprintf(stderr, "realloc() failed! %s\n", strerror(errno));    \
+            }                                                                  \
+        } else {                                                               \
+            adt->back += -(ADT##_Size(adt) - size);                            \
+        }                                                                      \
     }
 /*==============================================================================
     GUARD
