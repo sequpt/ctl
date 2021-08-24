@@ -77,7 +77,7 @@
     ctl_DynArray_Reserve()
 ------------------------------------------------------------------------------*/
 /**
- * Increases the capacity of an \p{array} by a given amount.
+ * Increases the capacity of an \p{array} to a given amount.
  *
  * If the new \p{capacity} is lower or equal to the previous one, nothing
  * happens.
