@@ -398,6 +398,25 @@
                 fprintf(stderr, "realloc() failed! %s\n", strerror(errno));    \
             }                                                                  \
         }                                                                      \
+    }                                                                          \
+    T ADT##_Remove(ADT * const adt, const size_t index)                        \
+    {                                                                          \
+        assert(adt != NULL);                                                   \
+        const size_t size = ADT##_Size(adt);                                   \
+        assert(index < size);                                                  \
+        /* Remove middle */                                                    \
+        if(index > 0 && index < size-1) {                                      \
+            const T data = *(adt->front + index);                              \
+            memmove(adt->front + index, adt->front + index + 1, sizeof(T) * (size-index-1)); \
+            adt->back--;                                                       \
+            return data;                                                       \
+        }                                                                      \
+        /* Remove front */                                                     \
+        if(index == 0) {                                                       \
+            return *adt->front++;                                              \
+        }                                                                      \
+        /* Remove back */                                                      \
+        return *--adt->back;                                                   \
     }
 /*==============================================================================
     GUARD

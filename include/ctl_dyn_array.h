@@ -457,6 +457,34 @@
  */
 #define ctl_DynArray_ShrinkToFit(array) \
     CTL_DYN_ARRAY_FUNC(array, ShrinkToFit)(array)
+/*------------------------------------------------------------------------------
+    ctl_DynArray_Remove()
+------------------------------------------------------------------------------*/
+/**
+ * Removes the element at the specified \p{index} of an \p{array}.
+ *
+ * @param[in,out] array : Pointer to the array.
+ * @param[in]     index : Index of the element.
+ *
+ * @return The removed element.
+ *
+ * @warning
+ * - \p{array} must be a valid pointer to an array created with
+ * ctl_DynArray_Create().
+ * - ctl_DynArray_Size() must be > 0.
+ * - \p{index} must be an integer in the range `[0; ctl_DynArray_Size() - 1]`.
+ *
+ * @example{
+ *  CTL_DYN_ARRAY(int) * array = ctl_DynArray_Create(array);
+ *  ctl_DynArray_PushBack(array, 7);       // size = 1
+ *  ctl_DynArray_PushBack(array, 13);      // size = 2
+ *  ctl_DynArray_PushBack(array, 19);      // size = 3
+ *  int x = ctl_DynArray_Remove(array, 1); // x = 13, size = 2
+ *  int y = ctl_DynArray_Remove(array, 1); // y = 19, size = 1
+ * }
+ */
+#define ctl_DynArray_Remove(array, index)                                      \
+    CTL_DYN_ARRAY_FUNC(array, Remove)(array, index)
 /*==============================================================================
     GUARD
 ==============================================================================*/

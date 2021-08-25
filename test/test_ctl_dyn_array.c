@@ -73,6 +73,7 @@ void TEST_ctl_DynArray_PopFront(void);
 void TEST_ctl_DynArray_Insert(void);
 void TEST_ctl_DynArray_Resize(void);
 void TEST_ctl_DynArray_ShrinkToFit(void);
+void TEST_ctl_DynArray_Remove(void);
 /*==============================================================================
     FUNCTION DEFINITION
 ==============================================================================*/
@@ -98,6 +99,7 @@ void TEST_CTL_DYN_ARRAY(void)
     TEST_ctl_DynArray_Insert();
     TEST_ctl_DynArray_Resize();
     TEST_ctl_DynArray_ShrinkToFit();
+    TEST_ctl_DynArray_Remove();
 }
 /*==============================================================================
     FUNCTION DEFINITION
@@ -512,4 +514,75 @@ void TEST_ctl_DynArray_ShrinkToFit(void)
         assert(ctl_DynArray_At(array0, i) == (int)i);
     }
     DESTROY(array0);
+}
+void TEST_ctl_DynArray_Remove(void)
+{
+    const size_t obj_cnt = 50;
+    // Remove front
+    CREATE(array0);
+    for(size_t i = 0; i < obj_cnt; i++) {
+        ctl_DynArray_PushBack(array0, (int)i);
+    }
+    size_t capacity = ctl_DynArray_Capacity(array0);
+    for(size_t i = 0; i < obj_cnt; i++) {
+        assert(ctl_DynArray_Remove(array0, 0) == (int)i);
+        assert(ctl_DynArray_Size(array0) == obj_cnt-i-1);
+        assert(ctl_DynArray_Capacity(array0) == capacity);
+    }
+    DESTROY(array0);
+
+    // Remove back
+    CREATE(array1);
+    for(size_t i = 0; i < obj_cnt; i++) {
+        ctl_DynArray_PushBack(array1, (int)i);
+    }
+    capacity = ctl_DynArray_Capacity(array1);
+    for(size_t i = obj_cnt; i > 0; i--) {
+        assert(ctl_DynArray_Remove(array1, i-1) == (int)(i-1));
+        assert(ctl_DynArray_Size(array1) == i-1);
+        assert(ctl_DynArray_Capacity(array1) == capacity);
+    }
+    DESTROY(array1);
+
+    // Remove middle: linear
+    CREATE(array2);
+    for(size_t i = 0; i < obj_cnt; i++) {
+        ctl_DynArray_PushBack(array2, (int)i);
+    }
+    capacity = ctl_DynArray_Capacity(array2);
+    for(size_t i = 1; i < (obj_cnt/2)+1; i++) {
+        assert(ctl_DynArray_Remove(array2, i) == (int)(i-1+i));
+        assert(ctl_DynArray_Size(array2) == obj_cnt-i);
+        assert(ctl_DynArray_Capacity(array2) == capacity);
+    }
+    DESTROY(array2);
+
+    // Remove middle: random
+    CREATE(array3);
+    RESERVE(array3, obj_cnt);
+    for(size_t i = 0; i < obj_cnt; i++) {
+        ctl_DynArray_PushBack(array3, (int)i);
+    }
+    capacity = ctl_DynArray_Capacity(array3);
+    srand(0);
+    for(size_t i = 0; i < obj_cnt-2; i++) {
+        const size_t n = ((size_t)rand() % (obj_cnt-2-i))+1;
+        assert(ctl_DynArray_At(array3, n) == ctl_DynArray_Remove(array3, n));
+        assert(ctl_DynArray_Size(array3) == obj_cnt-i-1);
+        assert(ctl_DynArray_Capacity(array3) == capacity);
+    }
+    DESTROY(array3);
+
+    // Remove middle: fixed
+    CREATE(array4);
+    for(size_t i = 0; i < obj_cnt; i++) {
+        ctl_DynArray_PushBack(array4, (int)i);
+    }
+    capacity = ctl_DynArray_Capacity(array4);
+    for(size_t i = 0; i < obj_cnt-2; i++) {
+        assert(ctl_DynArray_Remove(array4, 1) == (int)(i+1));
+        assert(ctl_DynArray_Size(array4) == obj_cnt-i-1);
+        assert(ctl_DynArray_Capacity(array4) == capacity);
+    }
+    DESTROY(array4);
 }
