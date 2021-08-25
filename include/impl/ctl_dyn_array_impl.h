@@ -365,8 +365,7 @@ _Bool ADT##_IsEmpty(const ADT * const adt)                                     \
 void ADT##_Clear(ADT * const adt)                                              \
 {                                                                              \
     assert(adt != NULL);                                                       \
-    adt->front = adt->start;                                                   \
-    adt->back  = adt->start;                                                   \
+    adt->front = adt->back = adt->start;                                       \
 }                                                                              \
 void ADT##_Resize(ADT * const adt, const size_t size)                          \
 {                                                                              \
