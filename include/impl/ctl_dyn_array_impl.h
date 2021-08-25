@@ -144,7 +144,7 @@
     _Bool ADT##_IsEmpty(const ADT * adt);                                      \
     void ADT##_Clear(ADT * adt);                                               \
     T ADT##_Remove(ADT * adt, size_t index);                                   \
-    _Bool ADT##_ShrinkToFit(ADT * adt);                                        \
+    void ADT##_ShrinkToFit(ADT * adt);                                         \
     void ADT##_Resize(ADT * adt, size_t size)
 
 #define CTL_DYN_ARRAY_DEFINE_FUNC(ADT, T)                                      \
@@ -383,6 +383,20 @@
             }                                                                  \
         } else {                                                               \
             adt->back += -(ADT##_Size(adt) - size);                            \
+        }                                                                      \
+    }                                                                          \
+    void ADT##_ShrinkToFit(ADT * const adt)                                    \
+    {                                                                          \
+        assert(adt != NULL);                                                   \
+        const size_t size = ADT##_Size(adt);                                   \
+        if(size != ADT##_Capacity(adt)) {                                      \
+            T * const start = realloc(adt->start, sizeof(T) * size);           \
+            if(start != NULL) {                                                \
+                adt->start = adt->front = start;                               \
+                adt->end   = adt->back  = start + size;                        \
+            } else {                                                           \
+                fprintf(stderr, "realloc() failed! %s\n", strerror(errno));    \
+            }                                                                  \
         }                                                                      \
     }
 /*==============================================================================

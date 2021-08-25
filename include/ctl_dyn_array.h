@@ -434,6 +434,29 @@
  */
 #define ctl_DynArray_Resize(array, size) \
     CTL_DYN_ARRAY_FUNC(array, Resize)(array, size)
+/*------------------------------------------------------------------------------
+    ctl_DynArray_ShrinkToFit()
+------------------------------------------------------------------------------*/
+/**
+ * Shrinks an \p{array} capacity to its size.
+ *
+ * @param[in,out] array : Pointer to the array.
+ *
+ * @return Nothing.
+ *
+ * @warning
+ * - \p{array} must be a valid pointer to an array created with
+ * ctl_DynArray_Create().
+ *
+ * @example{
+ *  CTL_DYN_ARRAY(int) * array = ctl_DynArray_Create(array);
+ *  ctl_DynArray_Resize(array, 5);   // size = 5, capacity = 5
+ *  ctl_DynArray_Reserve(array, 10); // size = 5, capacity = 10
+ *  ctl_DynArray_ShrinkToFit(array); // size = 5, capacity = 5
+ * }
+ */
+#define ctl_DynArray_ShrinkToFit(array) \
+    CTL_DYN_ARRAY_FUNC(array, ShrinkToFit)(array)
 /*==============================================================================
     GUARD
 ==============================================================================*/

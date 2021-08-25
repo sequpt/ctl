@@ -37,10 +37,7 @@ CTL_DEFINE(CTL_DYN_ARRAY, CTL_DYN_ARRAY_TYPES)
 #define CREATE(array)                                                          \
     CTL_DYN_ARRAY(int) * array = malloc(sizeof(*array));                       \
     assert(array != NULL);                                                     \
-    array->front = NULL;                                                       \
-    array->back  = NULL;                                                       \
-    array->start = NULL;                                                       \
-    array->end   = NULL
+    array->start = array->front = array->back = array->end = NULL
 
 #define DESTROY(array)                                                         \
     free(array->start);                                                        \
@@ -51,12 +48,11 @@ CTL_DEFINE(CTL_DYN_ARRAY, CTL_DYN_ARRAY_TYPES)
     array->start = malloc(sizeof(*array->front) * (cnt));                      \
     assert(array->start != NULL);                                              \
     array->back = array->front = array->start;                                 \
-    array->end                 = array->start + (cnt)
+    array->end  = array->start + (cnt)
 
 #define CLEAR(array)                                                           \
     free(array->start);                                                        \
-    array->start = NULL;                                                       \
-    array->end = array->back = array->front = array->start
+    array->start = array->front = array->back = array->end = NULL
 /*==============================================================================
     FUNCTION DECLARATION
 ==============================================================================*/
@@ -76,6 +72,7 @@ void TEST_ctl_DynArray_PushFront(void);
 void TEST_ctl_DynArray_PopFront(void);
 void TEST_ctl_DynArray_Insert(void);
 void TEST_ctl_DynArray_Resize(void);
+void TEST_ctl_DynArray_ShrinkToFit(void);
 /*==============================================================================
     FUNCTION DEFINITION
 ==============================================================================*/
@@ -100,6 +97,7 @@ void TEST_CTL_DYN_ARRAY(void)
     TEST_ctl_DynArray_PopFront();
     TEST_ctl_DynArray_Insert();
     TEST_ctl_DynArray_Resize();
+    TEST_ctl_DynArray_ShrinkToFit();
 }
 /*==============================================================================
     FUNCTION DEFINITION
@@ -483,5 +481,35 @@ void TEST_ctl_DynArray_Resize(void)
     }
     assert(ctl_DynArray_Size(array0) == obj_cnt);
     assert(new_capacity == ctl_DynArray_Capacity(array0));
+    DESTROY(array0);
+}
+void TEST_ctl_DynArray_ShrinkToFit(void)
+{
+    CREATE(array0);
+    // 0 == size == capacity
+    size_t obj_cnt = 0;
+    ctl_DynArray_ShrinkToFit(array0);
+    assert(ctl_DynArray_Size(array0) == obj_cnt);
+    assert(ctl_DynArray_Capacity(array0) == obj_cnt);
+    // 0 < size == capacity
+    obj_cnt = 10;
+    ctl_DynArray_Reserve(array0, obj_cnt);
+    for(size_t i = 0; i < obj_cnt; i++) {
+        ctl_DynArray_PushBack(array0, (int)i);
+    }
+    ctl_DynArray_ShrinkToFit(array0);
+    assert(ctl_DynArray_Size(array0) == obj_cnt);
+    assert(ctl_DynArray_Capacity(array0) == obj_cnt);
+    for(size_t i = 0; i < obj_cnt; i++) {
+        assert(ctl_DynArray_At(array0, i) == (int)i);
+    }
+    // 0 < size < capacity
+    ctl_DynArray_Reserve(array0, obj_cnt * 2);
+    ctl_DynArray_ShrinkToFit(array0);
+    assert(ctl_DynArray_Size(array0) == obj_cnt);
+    assert(ctl_DynArray_Capacity(array0) == obj_cnt);
+    for(size_t i = 0; i < obj_cnt; i++) {
+        assert(ctl_DynArray_At(array0, i) == (int)i);
+    }
     DESTROY(array0);
 }
