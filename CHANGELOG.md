@@ -13,6 +13,10 @@ which says in its summary:
 
 ## [Unreleased]
 
+## [0.1.0]
+
+(2021-08-28)
+
 ### Added
 
 - `ctl.h`:
@@ -37,5 +41,5 @@ which says in its summary:
   - `ctl_DynArray_IsEmpty()` to test if the array is empty or not.
   - `ctl_DynArray_Clear()` to remove all elements.
   - `ctl_DynArray_Resize()` to resize to a bigger or smaller array.
-  - `ctl_DynArray_ShrinkToFit()` to shrink the capacity to the size
+  - `ctl_DynArray_ShrinkToFit()` to shrink the capacity to the size.
   - `ctl_DynArray_Remove()` to remove an element from a given position.
