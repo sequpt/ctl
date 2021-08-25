@@ -406,9 +406,9 @@ T ADT##_Remove(ADT * const adt, const size_t index)                            \
     assert(index < size);                                                      \
     /* Remove middle */                                                        \
     if(index > 0 && index < size-1) {                                          \
-        const T data = *(adt->front + index);                                  \
-        memmove(adt->front + index, adt->front + index + 1,                    \
-            sizeof(T) * (size-index-1));                                       \
+        T * const dest = adt->front + index;                                   \
+        const T data = *dest;                                                  \
+        memmove(dest, dest + 1, sizeof(T) * (size-index-1));                   \
         adt->back--;                                                           \
         return data;                                                           \
     }                                                                          \
