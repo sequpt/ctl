@@ -23,6 +23,7 @@
 #include "test_ctl_dyn_array.h"
 // C Standard Library
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h> // malloc(), free(), NULL
 // CPL
 #include <ctl.h>
