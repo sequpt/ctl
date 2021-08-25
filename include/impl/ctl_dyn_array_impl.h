@@ -190,8 +190,8 @@ static void ADT##_shift_right(ADT * const adt, size_t index)                   \
     assert(adt->back != NULL);                                                 \
     assert(adt->back < adt->end);                                              \
     const size_t size = (size_t)(adt->back - adt->front);                      \
-    memmove(adt->front + index + 1, adt->front + index,                        \
-        sizeof(T) * (size - index));                                           \
+    T * const dest = adt->front + index + 1;                                   \
+    memmove(dest, dest - 1, sizeof(T) * (size - index));                       \
     adt->back++;                                                               \
 }                                                                              \
 ADT * ADT##_Create(void)                                                       \
