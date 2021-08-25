@@ -163,8 +163,7 @@ static void ADT##_move_to_start(ADT * const adt)                               \
     assert(adt->end != NULL);                                                  \
     assert(adt->front != NULL);                                                \
     assert(adt->back != NULL);                                                 \
-                                                                               \
-    size_t size = (size_t)(adt->back - adt->front);                            \
+    const size_t size = (size_t)(adt->back - adt->front);                      \
     memcpy(adt->start, adt->front, size);                                      \
     adt->front = adt->start;                                                   \
     adt->back  = adt->start + size;                                            \
