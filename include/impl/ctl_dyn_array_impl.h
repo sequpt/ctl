@@ -148,276 +148,277 @@
     void ADT##_Resize(ADT * adt, size_t size)
 
 #define CTL_DYN_ARRAY_DEFINE_FUNC(ADT, T)                                      \
-    static _Bool ADT##_grow(ADT * const adt)                                   \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        const size_t old_capacity = ADT##_Capacity(adt);                       \
-        size_t new_capacity = (size_t)((double)old_capacity * 1.5);            \
-        new_capacity += (new_capacity == old_capacity);                        \
-        return ADT##_Reserve(adt, new_capacity);                               \
-    }                                                                          \
-    static void ADT##_move_to_start(ADT * const adt)                           \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        assert(adt->start != NULL);                                            \
-        assert(adt->end != NULL);                                              \
-        assert(adt->front != NULL);                                            \
-        assert(adt->back != NULL);                                             \
+static _Bool ADT##_grow(ADT * const adt)                                       \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    const size_t old_capacity = ADT##_Capacity(adt);                           \
+    size_t new_capacity = (size_t)((double)old_capacity * 1.5);                \
+    new_capacity += (new_capacity == old_capacity);                            \
+    return ADT##_Reserve(adt, new_capacity);                                   \
+}                                                                              \
+static void ADT##_move_to_start(ADT * const adt)                               \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    assert(adt->start != NULL);                                                \
+    assert(adt->end != NULL);                                                  \
+    assert(adt->front != NULL);                                                \
+    assert(adt->back != NULL);                                                 \
                                                                                \
-        size_t size = (size_t)(adt->back - adt->front);                        \
-        memcpy(adt->start, adt->front, size);                                  \
-        adt->front = adt->start;                                               \
-        adt->back  = adt->start + size;                                        \
+    size_t size = (size_t)(adt->back - adt->front);                            \
+    memcpy(adt->start, adt->front, size);                                      \
+    adt->front = adt->start;                                                   \
+    adt->back  = adt->start + size;                                            \
+}                                                                              \
+static void ADT##_shift_left(ADT * const adt, size_t index)                    \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    assert(adt->start != NULL);                                                \
+    assert(adt->end != NULL);                                                  \
+    assert(adt->front != NULL);                                                \
+    assert(adt->back != NULL);                                                 \
+    assert(adt->front > adt->start);                                           \
+    assert(index < (size_t)(adt->back - adt->front));                          \
+    adt->front--;                                                              \
+    memmove(adt->front, adt->front + 1, sizeof(T) * (index + 1));              \
+}                                                                              \
+static void ADT##_shift_right(ADT * const adt, size_t index)                   \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    assert(adt->start != NULL);                                                \
+    assert(adt->end != NULL);                                                  \
+    assert(adt->front != NULL);                                                \
+    assert(adt->back != NULL);                                                 \
+    assert(adt->back < adt->end);                                              \
+    const size_t size = (size_t)(adt->back - adt->front);                      \
+    memmove(adt->front + index + 1, adt->front + index,                        \
+        sizeof(T) * (size - index));                                           \
+    adt->back++;                                                               \
+}                                                                              \
+ADT * ADT##_Create(void)                                                       \
+{                                                                              \
+    ADT * adt = malloc(sizeof(*adt));                                          \
+    if(adt != NULL) {                                                          \
+        adt->start = NULL;                                                     \
+        adt->end   = NULL;                                                     \
+        adt->front = NULL;                                                     \
+        adt->back  = NULL;                                                     \
+    } else {                                                                   \
+        fprintf(stderr, "malloc() failed! %s\n", strerror(errno));             \
     }                                                                          \
-    static void ADT##_shift_left(ADT * const adt, size_t index)                \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        assert(adt->start != NULL);                                            \
-        assert(adt->end != NULL);                                              \
-        assert(adt->front != NULL);                                            \
-        assert(adt->back != NULL);                                             \
-        assert(adt->front > adt->start);                                       \
-        assert(index < (size_t)(adt->back - adt->front));                      \
-        adt->front--;                                                          \
-        memmove(adt->front, adt->front + 1, sizeof(T) * (index + 1));          \
+    return adt;                                                                \
+}                                                                              \
+ADT * ADT##_CreateAndReserve(size_t capacity)                                  \
+{                                                                              \
+    ADT * adt = ADT##_Create();                                                \
+    if(adt != NULL && capacity > 0 && !ADT##_Reserve(adt, capacity)) {         \
+        free(adt);                                                             \
+        return NULL;                                                           \
     }                                                                          \
-    static void ADT##_shift_right(ADT * const adt, size_t index)               \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        assert(adt->start != NULL);                                            \
-        assert(adt->end != NULL);                                              \
-        assert(adt->front != NULL);                                            \
-        assert(adt->back != NULL);                                             \
-        assert(adt->back < adt->end);                                          \
-        const size_t size = (size_t)(adt->back - adt->front);                  \
-        memmove(adt->front + index + 1, adt->front + index,                    \
-            sizeof(T) * (size - index));                                       \
-        adt->back++;                                                           \
-    }                                                                          \
-    ADT * ADT##_Create(void)                                                   \
-    {                                                                          \
-        ADT * adt = malloc(sizeof(*adt));                                      \
-        if(adt != NULL) {                                                      \
-            adt->start = NULL;                                                 \
-            adt->end   = NULL;                                                 \
-            adt->front = NULL;                                                 \
-            adt->back  = NULL;                                                 \
-        } else {                                                               \
-            fprintf(stderr, "malloc() failed! %s\n", strerror(errno));         \
-        }                                                                      \
-        return adt;                                                            \
-    }                                                                          \
-    ADT * ADT##_CreateAndReserve(size_t capacity)                              \
-    {                                                                          \
-        ADT * adt = ADT##_Create();                                            \
-        if(adt != NULL && capacity > 0 && !ADT##_Reserve(adt, capacity)) {     \
-            free(adt);                                                         \
-            return NULL;                                                       \
-        }                                                                      \
-        return adt;                                                            \
-    }                                                                          \
-    void ADT##_Destroy(ADT ** const adt)                                       \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        assert(*adt != NULL);                                                  \
-        free((*adt)->start);                                                   \
-        free(*adt);                                                            \
-        *adt = NULL;                                                           \
-    }                                                                          \
-    _Bool ADT##_Reserve(ADT * const adt, const size_t capacity)                \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        if(capacity > ADT##_Capacity(adt)) {                                   \
-            const size_t size = ADT##_Size(adt);                               \
-            T * const start   = realloc(adt->start, sizeof(T) * capacity);     \
-            if(start != NULL) {                                                \
-                adt->start = start;                                            \
-                adt->end   = start + capacity;                                 \
-                adt->front = start;                                            \
-                adt->back  = start + size;                                     \
-                return true;                                                   \
-            }                                                                  \
-            fprintf(stderr, "malloc() failed! %s\n", strerror(errno));         \
-        }                                                                      \
-        return false;                                                          \
-    }                                                                          \
-    void ADT##_Insert(ADT * const adt, const size_t index, T data)             \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
+    return adt;                                                                \
+}                                                                              \
+void ADT##_Destroy(ADT ** const adt)                                           \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    assert(*adt != NULL);                                                      \
+    free((*adt)->start);                                                       \
+    free(*adt);                                                                \
+    *adt = NULL;                                                               \
+}                                                                              \
+_Bool ADT##_Reserve(ADT * const adt, const size_t capacity)                    \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    if(capacity > ADT##_Capacity(adt)) {                                       \
         const size_t size = ADT##_Size(adt);                                   \
-        assert(index <= size);                                                 \
-        /* Insert middle */                                                    \
-        if(index > 0 && index < size) {                                        \
-            if(adt->start == adt->front && adt->back == adt->end) {            \
-                ADT##_grow(adt);                                               \
-            }                                                                  \
-            if(adt->start == adt->front) {                                     \
-                ADT##_shift_right(adt, index);                                 \
-            } else {                                                           \
-                ADT##_shift_left(adt, index);                                  \
-            }                                                                  \
-            *(adt->front + index) = data;                                      \
-            /* Insert front */                                                 \
-        } else if(index == 0) {                                                \
-            ADT##_PushFront(adt, data);                                        \
-            /* Insert back */                                                  \
-        } else {                                                               \
-            ADT##_PushBack(adt, data);                                         \
+        T * const start   = realloc(adt->start, sizeof(T) * capacity);         \
+        if(start != NULL) {                                                    \
+            adt->start = start;                                                \
+            adt->end   = start + capacity;                                     \
+            adt->front = start;                                                \
+            adt->back  = start + size;                                         \
+            return true;                                                       \
         }                                                                      \
+        fprintf(stderr, "realloc() failed! %s\n", strerror(errno));            \
     }                                                                          \
-    void ADT##_PushFront(ADT * const adt, const T data)                        \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        /* {3, 4, 6, 7} */                                                     \
-        if(adt->start != adt->front) {                                         \
-            *--adt->front = data;                                              \
-            /* {2, 8} */                                                       \
-        } else if(adt->back == adt->end) {                                     \
+    return false;                                                              \
+}                                                                              \
+void ADT##_Insert(ADT * const adt, const size_t index, T data)                 \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    const size_t size = ADT##_Size(adt);                                       \
+    assert(index <= size);                                                     \
+    /* Insert middle */                                                        \
+    if(index > 0 && index < size) {                                            \
+        if(adt->start == adt->front && adt->back == adt->end) {                \
             ADT##_grow(adt);                                                   \
-            ADT##_shift_right(adt, 0);                                         \
-            *adt->front = data;                                                \
-            /* {1, 5} */                                                       \
+        }                                                                      \
+        if(adt->start == adt->front) {                                         \
+            ADT##_shift_right(adt, index);                                     \
         } else {                                                               \
-            ADT##_shift_right(adt, 0);                                         \
-            *adt->front = data;                                                \
+            ADT##_shift_left(adt, index);                                      \
+        }                                                                      \
+        *(adt->front + index) = data;                                          \
+    /* Insert front */                                                         \
+    } else if(index == 0) {                                                    \
+        ADT##_PushFront(adt, data);                                            \
+    /* Insert back */                                                          \
+    } else {                                                                   \
+        ADT##_PushBack(adt, data);                                             \
+    }                                                                          \
+}                                                                              \
+void ADT##_PushFront(ADT * const adt, const T data)                            \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    /* {3, 4, 6, 7} */                                                         \
+    if(adt->start != adt->front) {                                             \
+        *--adt->front = data;                                                  \
+    /* {2, 8} */                                                               \
+    } else if(adt->back == adt->end) {                                         \
+        ADT##_grow(adt);                                                       \
+        ADT##_shift_right(adt, 0);                                             \
+        *adt->front = data;                                                    \
+    /* {1, 5} */                                                               \
+    } else {                                                                   \
+        ADT##_shift_right(adt, 0);                                             \
+        *adt->front = data;                                                    \
+    }                                                                          \
+}                                                                              \
+void ADT##_PushBack(ADT * const adt, T data)                                   \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    /* {1, 3, 5, 6} */                                                         \
+    if((adt->back != adt->end)) {                                              \
+        *adt->back++ = data;                                                   \
+    /* {2, 8} */                                                               \
+    } else if(adt->start == adt->front) {                                      \
+        ADT##_grow(adt);                                                       \
+        *adt->back++ = data;                                                   \
+    /* {4, 7} */                                                               \
+    } else {                                                                   \
+        ADT##_move_to_start(adt);                                              \
+        *adt->back++ = data;                                                   \
+    }                                                                          \
+}                                                                              \
+T ADT##_PopFront(ADT * const adt)                                              \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    assert(adt->start != NULL);                                                \
+    assert(adt->end != NULL);                                                  \
+    assert(adt->front != NULL);                                                \
+    assert(adt->back != NULL);                                                 \
+    assert(adt->front < adt->back);                                            \
+    return *adt->front++;                                                      \
+}                                                                              \
+T ADT##_PopBack(ADT * const adt)                                               \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    assert(adt->start != NULL);                                                \
+    assert(adt->end != NULL);                                                  \
+    assert(adt->front != NULL);                                                \
+    assert(adt->back != NULL);                                                 \
+    assert(adt->front < adt->back);                                            \
+    return *--adt->back;                                                       \
+}                                                                              \
+T ADT##_At(const ADT * const adt, const size_t index)                          \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    assert(adt->start != NULL);                                                \
+    assert(adt->end != NULL);                                                  \
+    assert(adt->front != NULL);                                                \
+    assert(adt->back != NULL);                                                 \
+    assert(index < (size_t)(adt->back - adt->front));                          \
+    return *(adt->front + index);                                              \
+}                                                                              \
+T ADT##_Front(ADT * const adt)                                                 \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    assert(adt->start != NULL);                                                \
+    assert(adt->end != NULL);                                                  \
+    assert(adt->front != NULL);                                                \
+    assert(adt->back != NULL);                                                 \
+    assert(adt->front < adt->back);                                            \
+    return *adt->front;                                                        \
+}                                                                              \
+T ADT##_Back(ADT * const adt)                                                  \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    assert(adt->start != NULL);                                                \
+    assert(adt->end != NULL);                                                  \
+    assert(adt->front != NULL);                                                \
+    assert(adt->back != NULL);                                                 \
+    assert(adt->front < adt->back);                                            \
+    return *(adt->back - 1);                                                   \
+}                                                                              \
+size_t ADT##_Size(const ADT * const adt)                                       \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    return (adt->front != adt->back) ? (size_t)(adt->back - adt->front) : 0;   \
+}                                                                              \
+size_t ADT##_Capacity(const ADT * const adt)                                   \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    return (adt->start != adt->end) ? (size_t)(adt->end - adt->start) : 0;     \
+}                                                                              \
+_Bool ADT##_IsEmpty(const ADT * const adt)                                     \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    return (adt->front == adt->back);                                          \
+}                                                                              \
+void ADT##_Clear(ADT * const adt)                                              \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    adt->front = adt->start;                                                   \
+    adt->back  = adt->start;                                                   \
+}                                                                              \
+void ADT##_Resize(ADT * const adt, const size_t size)                          \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    const size_t capacity = ADT##_Capacity(adt);                               \
+    if(size > capacity) {                                                      \
+        T * const start = realloc(adt->start, sizeof(T) * size);               \
+        if(start != NULL) {                                                    \
+            adt->start = adt->front = start;                                   \
+            adt->end   = adt->back  = start + size;                            \
+        } else {                                                               \
+            fprintf(stderr, "realloc() failed! %s\n", strerror(errno));        \
+        }                                                                      \
+    } else {                                                                   \
+        adt->back += -(ADT##_Size(adt) - size);                                \
+    }                                                                          \
+}                                                                              \
+void ADT##_ShrinkToFit(ADT * const adt)                                        \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    const size_t size = ADT##_Size(adt);                                       \
+    if(size != ADT##_Capacity(adt)) {                                          \
+        T * const start = realloc(adt->start, sizeof(T) * size);               \
+        if(start != NULL) {                                                    \
+            adt->start = adt->front = start;                                   \
+            adt->end   = adt->back  = start + size;                            \
+        } else {                                                               \
+            fprintf(stderr, "realloc() failed! %s\n", strerror(errno));        \
         }                                                                      \
     }                                                                          \
-    void ADT##_PushBack(ADT * const adt, T data)                               \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        /* {1, 3, 5, 6} */                                                     \
-        if((adt->back != adt->end)) {                                          \
-            *adt->back++ = data;                                               \
-            /* {2, 8} */                                                       \
-        } else if(adt->start == adt->front) {                                  \
-            ADT##_grow(adt);                                                   \
-            *adt->back++ = data;                                               \
-            /* {4, 7} */                                                       \
-        } else {                                                               \
-            ADT##_move_to_start(adt);                                          \
-            *adt->back++ = data;                                               \
-        }                                                                      \
+}                                                                              \
+T ADT##_Remove(ADT * const adt, const size_t index)                            \
+{                                                                              \
+    assert(adt != NULL);                                                       \
+    const size_t size = ADT##_Size(adt);                                       \
+    assert(index < size);                                                      \
+    /* Remove middle */                                                        \
+    if(index > 0 && index < size-1) {                                          \
+        const T data = *(adt->front + index);                                  \
+        memmove(adt->front + index, adt->front + index + 1,                    \
+            sizeof(T) * (size-index-1));                                       \
+        adt->back--;                                                           \
+        return data;                                                           \
     }                                                                          \
-    T ADT##_PopFront(ADT * const adt)                                          \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        assert(adt->start != NULL);                                            \
-        assert(adt->end != NULL);                                              \
-        assert(adt->front != NULL);                                            \
-        assert(adt->back != NULL);                                             \
-        assert(adt->front < adt->back);                                        \
+    /* Remove front */                                                         \
+    if(index == 0) {                                                           \
         return *adt->front++;                                                  \
     }                                                                          \
-    T ADT##_PopBack(ADT * const adt)                                           \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        assert(adt->start != NULL);                                            \
-        assert(adt->end != NULL);                                              \
-        assert(adt->front != NULL);                                            \
-        assert(adt->back != NULL);                                             \
-        assert(adt->front < adt->back);                                        \
-        return *--adt->back;                                                   \
-    }                                                                          \
-    T ADT##_At(const ADT * const adt, const size_t index)                      \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        assert(adt->start != NULL);                                            \
-        assert(adt->end != NULL);                                              \
-        assert(adt->front != NULL);                                            \
-        assert(adt->back != NULL);                                             \
-        assert(index < (size_t)(adt->back - adt->front));                      \
-        return *(adt->front + index);                                          \
-    }                                                                          \
-    T ADT##_Front(ADT * const adt)                                             \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        assert(adt->start != NULL);                                            \
-        assert(adt->end != NULL);                                              \
-        assert(adt->front != NULL);                                            \
-        assert(adt->back != NULL);                                             \
-        assert(adt->front < adt->back);                                        \
-        return *adt->front;                                                    \
-    }                                                                          \
-    T ADT##_Back(ADT * const adt)                                              \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        assert(adt->start != NULL);                                            \
-        assert(adt->end != NULL);                                              \
-        assert(adt->front != NULL);                                            \
-        assert(adt->back != NULL);                                             \
-        assert(adt->front < adt->back);                                        \
-        return *(adt->back - 1);                                               \
-    }                                                                          \
-    size_t ADT##_Size(const ADT * const adt)                                   \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        return (adt->front != adt->back) ? (size_t)(adt->back - adt->front): 0;\
-    }                                                                          \
-    size_t ADT##_Capacity(const ADT * const adt)                               \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        return (adt->start != adt->end) ? (size_t)(adt->end - adt->start): 0;  \
-    }                                                                          \
-    _Bool ADT##_IsEmpty(const ADT * const adt)                                 \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        return (adt->front == adt->back);                                      \
-    }                                                                          \
-    void ADT##_Clear(ADT * const adt)                                          \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        adt->front = adt->start;                                               \
-        adt->back  = adt->start;                                               \
-    }                                                                          \
-    void ADT##_Resize(ADT * const adt, const size_t size)                      \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        const size_t capacity = ADT##_Capacity(adt);                           \
-        if(size > capacity) {                                                  \
-            T * const start = realloc(adt->start, sizeof(T) * size);           \
-            if(start != NULL) {                                                \
-                adt->start = adt->front = start;                               \
-                adt->end   = adt->back  = start + size;                        \
-            } else {                                                           \
-                fprintf(stderr, "realloc() failed! %s\n", strerror(errno));    \
-            }                                                                  \
-        } else {                                                               \
-            adt->back += -(ADT##_Size(adt) - size);                            \
-        }                                                                      \
-    }                                                                          \
-    void ADT##_ShrinkToFit(ADT * const adt)                                    \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        const size_t size = ADT##_Size(adt);                                   \
-        if(size != ADT##_Capacity(adt)) {                                      \
-            T * const start = realloc(adt->start, sizeof(T) * size);           \
-            if(start != NULL) {                                                \
-                adt->start = adt->front = start;                               \
-                adt->end   = adt->back  = start + size;                        \
-            } else {                                                           \
-                fprintf(stderr, "realloc() failed! %s\n", strerror(errno));    \
-            }                                                                  \
-        }                                                                      \
-    }                                                                          \
-    T ADT##_Remove(ADT * const adt, const size_t index)                        \
-    {                                                                          \
-        assert(adt != NULL);                                                   \
-        const size_t size = ADT##_Size(adt);                                   \
-        assert(index < size);                                                  \
-        /* Remove middle */                                                    \
-        if(index > 0 && index < size-1) {                                      \
-            const T data = *(adt->front + index);                              \
-            memmove(adt->front + index, adt->front + index + 1, sizeof(T) * (size-index-1)); \
-            adt->back--;                                                       \
-            return data;                                                       \
-        }                                                                      \
-        /* Remove front */                                                     \
-        if(index == 0) {                                                       \
-            return *adt->front++;                                              \
-        }                                                                      \
-        /* Remove back */                                                      \
-        return *--adt->back;                                                   \
-    }
+    /* Remove back */                                                          \
+    return *--adt->back;                                                       \
+}
 /*==============================================================================
     GUARD
 ==============================================================================*/
