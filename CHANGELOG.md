@@ -13,6 +13,30 @@ which says in its summary:
 
 ## [Unreleased]
 
+## [0.2.0]
+
+(2021-08-27)
+
+### Added
+
+- `ctl.h`:
+  - `CTL_STACK` to `CTL_ADT_LIST()`.
+- `ctl_stack.h`: a straightforward stack data structure.
+  - `CTL_STACK()` to use as a stack type specifier.
+  - `ctl_Stack_Create()` to create a stack.
+  - `ctl_Stack_Destroy()` to destroy a stack.
+  - `ctl_Stack_Reserve()` to increase the capacity.
+  - `ctl_Stack_Push()` to insert an element at the top.
+  - `ctl_Stack_Pop()` to remove and return the top element.
+  - `ctl_Stack_At()` to get the element at a given position.
+  - `ctl_Stack_Back()` to get the top element.
+  - `ctl_Stack_Capacity()` to get the current capacity.
+  - `ctl_Stack_Size()` to get the current size.
+  - `ctl_Stack_IsEmpty()` to test if the stack is empty or not.
+  - `ctl_Stack_Clear()` to remove all elements.
+  - `ctl_Stack_Resize()` to resize to a bigger or smaller stack.
+  - `ctl_Stack_ShrinkToFit()` to shrink the capacity to the size.
+
 ## [0.1.1]
 
 (2021-08-27)
