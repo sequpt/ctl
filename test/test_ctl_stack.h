@@ -17,24 +17,15 @@
  * }
  */
 /*==============================================================================
-    INCLUDE
+    GUARD
 ==============================================================================*/
-// The API to test
-#include "test_ctl_dyn_array.h"
-#include "test_ctl_stack.h"
-// C Standard Library
-#include <stdio.h>  // printf()
-#include <stdlib.h> // EXIT_SUCCESS
+#ifndef TEST_CTL_STACK_H_20210825214715
+#define TEST_CTL_STACK_H_20210825214715
 /*==============================================================================
-    MAIN
+    PUBLIC FUNCTION
 ==============================================================================*/
-int main(void)
-{
-    TEST_CTL_DYN_ARRAY();
-    printf("TEST_CTL_DYN_ARRAY: OK!\n");
-    TEST_CTL_STACK();
-    printf("TEST_CTL_STACK: OK!\n");
-    
-    printf("TESTS: OK!\n");
-    return EXIT_SUCCESS;
-}
+void TEST_CTL_STACK(void);
+/*==============================================================================
+    GUARD
+==============================================================================*/
+#endif // TEST_CTL_STACK_H_20210825214715

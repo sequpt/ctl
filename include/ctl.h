@@ -46,10 +46,11 @@
  *
  * @example{
  * #define CTL_DYN_ARRAY_TYPES int, char, float
+ * #define CTL_STACK_TYPES int, double
  * }
  */
 #define CTL_ADT_LIST() \
-    CTL_DYN_ARRAY
+    CTL_DYN_ARRAY, CTL_STACK
 /**
  * Declares the necessary structures and functions to use an ADT with specific
  * data types.
@@ -74,7 +75,7 @@
  * @usage{
  * #define CTL_DYN_ARRAY_TYPES int, char, float
  * CTL_DECLARE(CTL_DYN_ARRAY, CTL_DYN_ARRAY_TYPES);
- * CTL_DEFINE(CTL_DYN_ARRAY, CTL_DYN_ARRAY_TYPES);
+ * CTL_DEFINE(CTL_DYN_ARRAY, CTL_DYN_ARRAY_TYPES)
  * }
  */
 #define CTL_DEFINE(ADT, ...)                                                   \
