@@ -284,18 +284,16 @@ void ADT##_PushFront(ADT * const adt, const T data)                            \
 void ADT##_PushBack(ADT * const adt, T data)                                   \
 {                                                                              \
     assert(adt != NULL);                                                       \
-    /* {1, 3, 5, 6} */                                                         \
-    if((adt->back != adt->end)) {                                              \
-        *adt->back++ = data;                                                   \
-    /* {2, 8} */                                                               \
-    } else if(adt->start == adt->front) {                                      \
-        ADT##_grow(adt);                                                       \
-        *adt->back++ = data;                                                   \
-    /* {4, 7} */                                                               \
-    } else {                                                                   \
-        ADT##_move_to_start(adt);                                              \
-        *adt->back++ = data;                                                   \
+    if((adt->back == adt->end)) {                                              \
+        /* {2, 8} */                                                           \
+        if(adt->start == adt->front) {                                         \
+            ADT##_grow(adt);                                                   \
+        /* {4, 7} */                                                           \
+        } else {                                                               \
+            ADT##_move_to_start(adt);                                          \
+        }                                                                      \
     }                                                                          \
+    *adt->back++ = data;                                                       \
 }                                                                              \
 T ADT##_PopFront(ADT * const adt)                                              \
 {                                                                              \
