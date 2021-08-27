@@ -19,7 +19,7 @@ structures and functions.
 - [Contributing](#contributing)
 - [Interesting links](#interesting-links)
 - [License](#license)
-- [Thanks](#Thanks)
+- [Thanks](#thanks)
 
 ## Quick overview
 
