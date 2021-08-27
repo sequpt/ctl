@@ -19,6 +19,7 @@ structures and functions.
 - [Contributing](#contributing)
 - [Interesting links](#interesting-links)
 - [License](#license)
+- [Thanks](#Thanks)
 
 ## Quick overview
 
@@ -120,3 +121,7 @@ More information on the 0BSD license:
 - [BSD Zero Clause License | Software Package Data Exchange (SPDX)](https://spdx.org/licenses/0BSD.html)
 - [Zero-Clause BSD (0BSD) | Open Source Initiative](https://opensource.org/licenses/0BSD)
 - [BSD Zero Clause License | Choose a License](https://choosealicense.com/licenses/0bsd/)
+
+## Thanks
+
+- [Thibault North](https://gitlab.com/thno)
