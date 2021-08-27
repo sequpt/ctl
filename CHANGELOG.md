@@ -13,6 +13,11 @@ which says in its summary:
 
 ## [Unreleased]
 
+### Fixed
+
+- Speed hit in `ctl_DynArray_PushBack()`.
+- Unit test for `ctl_DynArray_PopFront()`.
+
 ## [0.1.0]
 
 (2021-08-28)
