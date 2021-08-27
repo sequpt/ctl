@@ -341,7 +341,7 @@ void TEST_ctl_DynArray_PopFront(void)
     for(size_t i = 0; i < obj_cnt; i++) {
         ctl_DynArray_PushFront(array, (int)i);
         assert(ctl_DynArray_Size(array) == 1);
-        assert(ctl_DynArray_PopBack(array) == (int)i);
+        assert(ctl_DynArray_PopFront(array) == (int)i);
         assert(ctl_DynArray_Size(array) == 0);
     }
     DESTROY(array);
