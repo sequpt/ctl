@@ -13,6 +13,10 @@ which says in its summary:
 
 ## [Unreleased]
 
+## [0.1.1]
+
+(2021-08-27)
+
 ### Fixed
 
 - Speed hit in `ctl_DynArray_PushBack()`.
@@ -20,7 +24,7 @@ which says in its summary:
 
 ## [0.1.0]
 
-(2021-08-28)
+(2021-08-25)
 
 ### Added
 
