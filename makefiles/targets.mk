@@ -13,9 +13,20 @@ ifneq ($(BUILD_MODE),$(findstring $(BUILD_MODE),debug release))
     $(error BUILD_MODE must be one of [debug, release])
 endif
 
-# Build project and tests(if there is a test folder)
+ifneq ($(COVERAGE),$(findstring $(COVERAGE),true false))
+    $(error COVERAGE must be one of [true, false])
+endif
+
+# Build project and tests(if there is a test folder) with the default build mode
+# (debug).
 .PHONY: all
 all:: $(PROJECT_DEPS) $(PROJECT_TYPE) $(TEST_TARGET)
+
+# Same as `all` target but also build in release mode.
+.PHONY: all_dr
+all_dr::
+	$(MAKE) all BUILD_MODE=debug
+	$(MAKE) all BUILD_MODE=release
 
 # Compile *.c files
 $(OBJ_PATH)/%.o: %.c $(OBJ_DEPS)
@@ -24,7 +35,7 @@ $(OBJ_PATH)/%.o: %.c $(OBJ_DEPS)
 # HEADER PROJECT
 ################################################################################
 ifeq ($(PROJECT_TYPE),header)
-# Nothing to build for header only project(tests are build with the `test`
+# Nothing to build for header only project(tests are built with the `test`
 # target).
 SRC_DIRS :=
 COV_CMD :=

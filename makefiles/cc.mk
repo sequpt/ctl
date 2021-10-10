@@ -8,13 +8,14 @@
 # Compiler name                                                              [R]
 CC_NAME := gcc
 # Compiler version                                                           [R]
-CC_VERSION ?= 11
+CC_VERSION :=
 # Set CC to `name-version` if CC_VERSION isn't empty or to `name` otherwise
 ifeq ($(strip $(CC_VERSION)),)
-CC = $(CC_NAME)
-else
-CC = $(CC_NAME)-$(CC_VERSION)
+CC_VERSION := $(shell \
+    gcc -v 2>&1 >/dev/null \
+    | sed -Ene 's/gcc version ([0-9]+).*$$/\1/p')
 endif
+CC = $(CC_NAME)-$(CC_VERSION)
 ################################################################################
 # WARNING
 #
@@ -165,7 +166,9 @@ CC_PROFILING    := #-pg
 # Valgrind doesn't seem to work properly on executables build with --coverage.
 # Invoke -fprofile-arcs -ftest-coverage(when compiling) and -lcov(when linking).
 # Create *.gcno files.
+ifeq ($(COVERAGE), true)
 CC_COVERAGE := --coverage
+endif
 # Directories to be used with the -I option
 CC_IDIRS  = $(SRC_DIRS:%=-I%)
 CC_IDIRS += $(INC_DIRS:%=-I%)
