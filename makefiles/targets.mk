@@ -129,6 +129,11 @@ test::
 	$(MAKE) -C $(TEST_PATH) all CC=$(CC) BUILD_MODE=$(BUILD_MODE) \
 	MAKEFILE_PATH=../$(MAKEFILE_PATH)
 
+PRE_PASS_DEPS = pre_pass_test
+.PHONY: pre_pass_test
+pre_pass_test::
+	$(MAKE) -C $(TEST_PATH) pre_pass MAKEFILE_PATH=../$(MAKEFILE_PATH)
+
 # Run tests(they must be build first)
 .PHONY: check
 check::
@@ -166,7 +171,7 @@ cov:: $(COV_DEPS) | $(LCOV_PATH)
 doc:: | $(DOXYGEN_PATH)
 	$(DOXYGEN)
 ################################################################################
-# CLEAN/REBUILD/INSTALL/UNINSTALL
+# CLEAN/REBUILD/INSTALL/UNINSTALL/PREPROCESSOR
 ################################################################################
 # Remove build files
 CLEAN_CMD = rm -rf $(BUILD_ROOT_PATH)
@@ -185,6 +190,14 @@ install:: $(INSTALL_DEPS)
 # Uninstall everything
 .PHONY: uninstall
 uninstall:: $(UNINSTALL_DEPS)
+
+# Only output the result of the preprocessor pass.
+.PHONY: pre_pass
+pre_pass:: $(PRE_FILES) $(PRE_PASS_DEPS)
+
+# Implicit rule to output the result of the preprocessor pass.
+$(PRE_PATH)/%.pre: %.c $(PRE_DEPS)
+	$(PREPROCESSOR)
 ################################################################################
 # MISC
 ################################################################################
@@ -192,6 +205,7 @@ uninstall:: $(UNINSTALL_DEPS)
 # redirected here to avoid make failing with `No rule to make target`.
 .PHONY: empty_target
 empty_target::;
+%::;
 # Targets to create output directories when they are needed but don't exist yet.
 # mkdir -p: No error if directory exists and make parent directories as needed
 $(ANALYSIS_PATH):       ;mkdir -p $(ANALYSIS_PATH)
@@ -204,6 +218,7 @@ $(LCOV_PATH):           ;mkdir -p $(LCOV_PATH)
 $(LIB_INSTALL_PATH):    ;mkdir -p $(LIB_INSTALL_PATH)
 $(OBJ_PATH):            ;mkdir -p $(OBJ_PATH)
 $(PKG_PC_INSTALL_PATH): ;mkdir -p $(PKG_PC_INSTALL_PATH)
+$(PRE_PATH):            ;mkdir -p $(PRE_PATH)
 $(SCANBUILD_PATH):      ;mkdir -p $(SCANBUILD_PATH)
 $(VALGRIND_PATH):       ;mkdir -p $(VALGRIND_PATH)
 # Make each *.d file a target so make won't fail if the file doesn't exist

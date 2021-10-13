@@ -42,6 +42,8 @@ INC_FOLDER := include
 LIB_FOLDER := lib
 # Input/output folder for object files(*.o)                                  [X]
 OBJ_FOLDER := obj
+# Output folder for the preprocessor pass(*.pre)                             [x]
+PRE_FOLDER := pre
 # Input folder for source files(*.c)                                         [X]
 SRC_FOLDER := src
 # Input/output folder for tests                                              [X]
@@ -56,6 +58,7 @@ EXT_PATH        = $(EXT_FOLDER)
 INC_PATH        = $(INC_FOLDER)
 LIB_PATH        = $(LIB_FOLDER)
 OBJ_PATH        = $(BUILD_PATH)/$(OBJ_FOLDER)
+PRE_PATH        = $(BUILD_PATH)/$(PRE_FOLDER)
 SRC_PATH        = $(SRC_FOLDER)
 TEST_PATH       = $(TEST_FOLDER)
 # Prefix for installation path                                               [X]
@@ -93,6 +96,13 @@ DEP_FILES_PASS1 = $(OBJ_FILES_PASS1:.o=.d)
 DEP_FILES = $(DEP_FILES_PASS1:%=$(DEP_PATH)/%)
 # Dependencies for %.o: %.c rule                                             [X]
 OBJ_DEPS = $(DEP_PATH)/%.d | $(OBJ_PATH) $(DEP_PATH)
+# Change .c extension to .pre and remove directory-part(path/to/foo.c =>     [X]
+# foo.pre)
+PRE_FILES_PASS1 = $(notdir $(SRC_FILES:.c=.pre))
+# Prefix all files with $(PRE_PATH)(foo.pre => ./build/debug/pre/foo.pre)    [X]
+PRE_FILES = $(PRE_FILES_PASS1:%=$(PRE_PATH)/%)
+# Dependencies for %.pre: %.c rule                                           [X]
+PRE_DEPS = $(DEP_PATH)/%.d | $(PRE_PATH) $(DEP_PATH)
 ################################################################################
 # EXTERNAL
 ################################################################################

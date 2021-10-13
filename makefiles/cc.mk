@@ -198,6 +198,15 @@ CFLAGS += -o $@
 # MP   : Create a target for each .h
 # MF   : Output path for the .d file
 CPPFLAGS = -MMD -MT $@ -MP -MF $(DEP_PATH)/$*.d
+
+# Command to make a preprocessor pass only.
+PREPROCESSOR  = $(CC)
+PREPROCESSOR += $<
+PREPROCESSOR += $(CC_C_VERSION)
+PREPROCESSOR += $(CC_IDIRS)
+PREPROCESSOR += $(CPPFLAGS)
+PREPROCESSOR += -dU -E
+PREPROCESSOR += -o $@
 # Command to compile *.c files
 COMPILE  = $(CC)
 COMPILE += $<
