@@ -193,7 +193,7 @@ void ADT##_Push(ADT * const adt, const T data)                                 \
         ADT##_grow(adt);                                                       \
     /* {2, 4} */                                                               \
     }                                                                          \
-        *adt->back++ = data;                                                   \
+    *adt->back++ = data;                                                       \
 }                                                                              \
 T ADT##_Pop(ADT * const adt)                                                   \
 {                                                                              \
@@ -224,14 +224,19 @@ void ADT##_ShrinkToFit(ADT * const adt)                                        \
 {                                                                              \
     assert(adt != NULL);                                                       \
     const size_t size = ADT##_Size(adt);                                       \
-    if(size != ADT##_Capacity(adt)) {                                          \
-        T * const start = realloc(adt->start, sizeof(T) * size);               \
-        if(start != NULL) {                                                    \
-            adt->start = start;                                                \
-            adt->end = adt->back = start + size;                               \
-        } else {                                                               \
-            fprintf(stderr, "realloc() failed! %s\n", strerror(errno));        \
+    if(size != 0) {                                                            \
+        if(size != ADT##_Capacity(adt)) {                                      \
+            T * const start = realloc(adt->start, sizeof(T) * size);           \
+            if(start != NULL) {                                                \
+                adt->start = start;                                            \
+                adt->end = adt->back = start + size;                           \
+            } else {                                                           \
+                fprintf(stderr, "realloc() failed! %s\n", strerror(errno));    \
+            }                                                                  \
         }                                                                      \
+    } else {                                                                   \
+        free(adt->start);                                                      \
+        adt->start = adt->back = adt->end = NULL;                              \
     }                                                                          \
 }
 /*==============================================================================
