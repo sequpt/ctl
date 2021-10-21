@@ -33,8 +33,7 @@ int main(void)
     TEST_CTL_DYN_ARRAY();
     printf("TEST_CTL_DYN_ARRAY: OK!\n");
     TEST_CTL_STACK();
-    printf("TEST_CTL_STACK: OK!\n");
-    
+
     printf("TESTS: OK!\n");
     return EXIT_SUCCESS;
 }

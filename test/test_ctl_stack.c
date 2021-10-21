@@ -35,8 +35,10 @@
 CTL_DECLARE(CTL_STACK, CTL_STACK_TYPES);
 CTL_DEFINE(CTL_STACK, CTL_STACK_TYPES)
 
-#define CREATE(adt)                                                            \
-    CTL_STACK(int) * (adt) = malloc(sizeof(*(adt)));                           \
+#define GROWTH_FACTOR 1.5
+
+#define CREATE(adt, T)                                                         \
+    CTL_STACK(T) * (adt) = malloc(sizeof(*(adt)));                             \
     assert((adt) != NULL);                                                     \
     (adt)->start = (adt)->end = (adt)->back = NULL
 
@@ -46,14 +48,39 @@ CTL_DEFINE(CTL_STACK, CTL_STACK_TYPES)
     (adt) = NULL
 
 #define RESERVE(adt, cnt)                                                      \
-    adt->start = malloc(sizeof(*(adt)->start) * (cnt));                        \
+    RESET(adt);                                                                \
+    (adt)->start = calloc((cnt), sizeof(*((adt)->start)));                     \
     assert((adt)->start != NULL);                                              \
     (adt)->back = (adt)->start;                                                \
     (adt)->end = (adt)->start + (cnt)
 
 #define CLEAR(adt)                                                             \
+    (adt)->end = (adt)->back = (adt)->start
+
+#define RESET(adt)                                                             \
     free((adt)->start);                                                        \
-    (adt)->start = (adt)->end = (adt)->back = NULL
+    (adt)->start = (adt)->back = (adt)->end = NULL
+
+#define MOVE_BACK(adt, n)                                                      \
+    (adt)->back += (n)
+
+#define SET_BACK(adt, x)                                                       \
+    *((adt)->back-1) = (x)
+
+#define BACK(adt)                                                              \
+    *((adt)->back-1)
+
+#define PUSH_BACK(adt, x)                                                      \
+    *((adt)->back)++ = x
+
+#define START(adt)                                                             \
+    *((adt)->start)
+
+#define SET_AT(adt, n, x)                                                      \
+    *((adt)->start + (n)) = (x)
+
+#define AT(adt, n)                                                             \
+    *((adt)->start + (n))
 /*==============================================================================
     FUNCTION DECLARATION
 ==============================================================================*/
@@ -78,6 +105,7 @@ void TEST_ctl_Stack_ShrinkToFit(void);
 ------------------------------------------------------------------------------*/
 void TEST_CTL_STACK(void)
 {
+    printf("%s:\n", __func__);
     TEST_ctl_Stack_Create();
     TEST_ctl_Stack_Destroy();
     TEST_ctl_Stack_Size();
@@ -91,6 +119,7 @@ void TEST_CTL_STACK(void)
     TEST_ctl_Stack_Pop();
     TEST_ctl_Stack_Resize();
     TEST_ctl_Stack_ShrinkToFit();
+    printf("%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_Create(void)
 {
@@ -99,238 +128,464 @@ void TEST_ctl_Stack_Create(void)
     assert(adt->start == adt->end);
     assert(adt->start == adt->back);
     DESTROY(adt);
+    printf("\t%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_Destroy(void)
 {
-    CREATE(adt);
+    CREATE(adt, int);
     ctl_Stack_Destroy(adt);
     assert(adt == NULL);
+    printf("\t%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_Size(void)
 {
-    const size_t obj_cnt = 5;
-    CREATE(adt);
+    const size_t obj_cnt = 20;
+    CREATE(adt, int);
+    // start = back = end
     assert(ctl_Stack_Size(adt) == 0);
+    // start = back < end
     RESERVE(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == 0);
+    // start < back < end
     for(size_t i = 0; i < obj_cnt; i++) {
         assert(ctl_Stack_Size(adt) == i);
-        adt->back++;
+        MOVE_BACK(adt, 1);
     }
+    // start < back = end
+    assert(ctl_Stack_Size(adt) == obj_cnt);
     DESTROY(adt);
+    printf("\t%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_Capacity(void)
 {
-    const size_t obj_cnt = 5;
-    CREATE(adt);
-    // Initial state
+    const size_t obj_cnt = 20;
+    CREATE(adt, int);
+    // 0 = size = capacity
     assert(ctl_Stack_Capacity(adt) == 0);
-    // Reserve `obj_cnt`
+    // 0 = size < capacity
     RESERVE(adt, obj_cnt);
     assert(ctl_Stack_Capacity(adt) == obj_cnt);
-    // Add `obj_cnt` objects
-    adt->back += obj_cnt;
+    // 0 < size < capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
     assert(ctl_Stack_Capacity(adt) == obj_cnt);
-    // Remove objects
-    CLEAR(adt);
-    assert(ctl_Stack_Capacity(adt) == 0);
+    // 0 < size = capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
     DESTROY(adt);
+    printf("\t%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_IsEmpty(void)
 {
-    const size_t obj_cnt = 5;
-    CREATE(adt);
-    // Initial state
+    const size_t obj_cnt = 20;
+    CREATE(adt, int);
+    // start = back = end
     assert(ctl_Stack_IsEmpty(adt) == true);
-    // Add `obj_cnt` objects
+    // start = back < end
     RESERVE(adt, obj_cnt);
-    adt->back += obj_cnt;
-    assert(ctl_Stack_IsEmpty(adt) == false);
-    // Remove objects
-    CLEAR(adt);
     assert(ctl_Stack_IsEmpty(adt) == true);
+    // start < back < end
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    assert(ctl_Stack_IsEmpty(adt) == false);
+    // start < back = end
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt);
+    assert(ctl_Stack_IsEmpty(adt) == false);
     DESTROY(adt);
+    printf("\t%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_Reserve(void)
 {
-    const size_t obj_cnt = 5;
-    CREATE(adt);
-    // Initial state
-    assert(ctl_Stack_Size(adt) == 0);
-    assert(ctl_Stack_Capacity(adt) == 0);
-    assert(ctl_Stack_IsEmpty(adt) == true);
-    // Reserve 0
+    const size_t obj_cnt = 20;
+    const int back_data = 0xCAFE;
+    CREATE(adt, int);
+    // 0 = size = reserve = capacity
     ctl_Stack_Reserve(adt, 0);
     assert(ctl_Stack_Size(adt) == 0);
     assert(ctl_Stack_Capacity(adt) == 0);
-    assert(ctl_Stack_IsEmpty(adt) == true);
-    // Reserve `obj_cnt`
+    // 0 = size = reserve < capacity
+    RESERVE(adt, obj_cnt);
+    ctl_Stack_Reserve(adt, 0);
+    assert(ctl_Stack_Size(adt) == 0);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    // 0 = size = capacity < reserve
+    RESET(adt);
     ctl_Stack_Reserve(adt, obj_cnt);
     assert(ctl_Stack_Size(adt) == 0);
     assert(ctl_Stack_Capacity(adt) == obj_cnt);
-    assert(ctl_Stack_IsEmpty(adt) == true);
-    // Reserve `obj_cnt` again
+    // 0 = size < reserve = capacity
+    RESERVE(adt, obj_cnt);
     ctl_Stack_Reserve(adt, obj_cnt);
     assert(ctl_Stack_Size(adt) == 0);
     assert(ctl_Stack_Capacity(adt) == obj_cnt);
-    assert(ctl_Stack_IsEmpty(adt) == true);
-    // Reserve `obj_cnt` * 2
-    ctl_Stack_Reserve(adt, obj_cnt * 2);
+    // 0 = size < reserve < capacity
+    RESERVE(adt, obj_cnt);
+    ctl_Stack_Reserve(adt, obj_cnt/2);
     assert(ctl_Stack_Size(adt) == 0);
-    assert(ctl_Stack_Capacity(adt) == obj_cnt * 2);
-    assert(ctl_Stack_IsEmpty(adt) == true);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    // 0 = size < capacity < reserve
+    RESERVE(adt, obj_cnt/2);
+    ctl_Stack_Reserve(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == 0);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    // 0 = reserve < size = capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Reserve(adt, 0);
+    assert(ctl_Stack_Size(adt) == obj_cnt);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // 0 = reserve < size < capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Reserve(adt, 0);
+    assert(ctl_Stack_Size(adt) == obj_cnt/2);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // 0 < size = reserve = capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Reserve(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == obj_cnt);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // 0 < size = reserve < capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Reserve(adt, obj_cnt/2);
+    assert(ctl_Stack_Size(adt) == obj_cnt/2);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // 0 < size = capacity < reserve
+    RESERVE(adt, obj_cnt/2);
+    MOVE_BACK(adt, obj_cnt/2);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Reserve(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == obj_cnt/2);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // 0 < size < reserve = capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Reserve(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == obj_cnt/2);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // 0 < size < reserve < capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/4);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Reserve(adt, obj_cnt/2);
+    assert(ctl_Stack_Size(adt) == obj_cnt/4);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // 0 < size < capacity < reserve
+    RESERVE(adt, obj_cnt/2);
+    MOVE_BACK(adt, obj_cnt/4);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Reserve(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == obj_cnt/4);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // 0 < reserve < size = capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Reserve(adt, obj_cnt/2);
+    assert(ctl_Stack_Size(adt) == obj_cnt);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // 0 < reserve < size < capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Reserve(adt, obj_cnt/4);
+    assert(ctl_Stack_Size(adt) == obj_cnt/2);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
     DESTROY(adt);
+    printf("\t%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_Clear(void)
 {
-    size_t obj_cnt = 5;
-    CREATE(adt);
-    // Initial state
+    const size_t obj_cnt = 20;
+    CREATE(adt, int);
+    // start = back = end
+    ctl_Stack_Clear(adt);
     assert(ctl_Stack_Size(adt) == 0);
     assert(ctl_Stack_Capacity(adt) == 0);
-    assert(ctl_Stack_IsEmpty(adt) == true);
-    // Add `obj_cnt` objects
+    // start = back < end
     RESERVE(adt, obj_cnt);
-    adt->back += obj_cnt;
-    assert(ctl_Stack_Size(adt) == obj_cnt);
-    assert(ctl_Stack_Capacity(adt) == obj_cnt);
-    assert(ctl_Stack_IsEmpty(adt) == false);
-    // Remove objects
     ctl_Stack_Clear(adt);
     assert(ctl_Stack_Size(adt) == 0);
     assert(ctl_Stack_Capacity(adt) == obj_cnt);
-    assert(ctl_Stack_IsEmpty(adt) == true);
+    // start < back < end
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    ctl_Stack_Clear(adt);
+    assert(ctl_Stack_Size(adt) == 0);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    // start < back = end
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt);
+    ctl_Stack_Clear(adt);
+    assert(ctl_Stack_Size(adt) == 0);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
     DESTROY(adt);
+    printf("\t%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_At(void)
 {
-    const size_t obj_cnt = 5;
-    CREATE(adt);
+    const size_t obj_cnt = 20;
+    CREATE(adt, int);
     RESERVE(adt, obj_cnt);
     for(size_t i = 0; i < obj_cnt; i++) {
-        *adt->back++ = (int)i;
+        PUSH_BACK(adt, (int)i);
         assert(ctl_Stack_At(adt, i) == (int)i);
     }
     DESTROY(adt);
+    printf("\t%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_Top(void)
 {
-    const size_t obj_cnt = 5;
-    CREATE(adt);
+    const size_t obj_cnt = 20;
+    CREATE(adt, int);
     RESERVE(adt, obj_cnt);
     for(size_t i = 0; i < obj_cnt; i++) {
-        *adt->back++ = (int)i;
+        PUSH_BACK(adt, (int)i);
         assert(ctl_Stack_Back(adt) == (int)i);
     }
     DESTROY(adt);
+    printf("\t%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_Push(void)
 {
-    const size_t obj_cnt = 50;
-    // Capacity == 0
-    CREATE(adt0);
+    const size_t obj_cnt = 20;
+    const int back_data = 0xCAFE;
+    CREATE(adt, int);
+    // start = back = end
+    ctl_Stack_Push(adt, back_data);
+    assert(ctl_Stack_Size(adt) == 1);
+    assert(ctl_Stack_Capacity(adt) == 1);
+    assert(BACK(adt) == back_data);
+    assert(START(adt) == back_data);
+    // start = back < end
+    RESERVE(adt, obj_cnt);
+    ctl_Stack_Push(adt, back_data);
+    assert(ctl_Stack_Size(adt) == 1);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    assert(START(adt) == back_data);
+    // start < back < end
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    ctl_Stack_Push(adt, back_data);
+    assert(ctl_Stack_Size(adt) == (obj_cnt/2)+1);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // start < back = end
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt);
+    ctl_Stack_Push(adt, back_data);
+    assert(ctl_Stack_Size(adt) == obj_cnt+1);
+    assert(ctl_Stack_Capacity(adt) == (size_t)(obj_cnt * GROWTH_FACTOR));
+    assert(BACK(adt) == back_data);
+    // all
+    RESET(adt);
     for(size_t i = 0; i < obj_cnt; i++) {
-        ctl_Stack_Push(adt0, (int)i);
-        assert(ctl_Stack_Back(adt0) == (int)i);
-        assert(ctl_Stack_At(adt0, i) == (int)i);
-        assert(ctl_Stack_Size(adt0) == i + 1);
+        ctl_Stack_Push(adt, (int)i);
+        assert(ctl_Stack_Size(adt) == i+1);
+        assert(BACK(adt) == (int)i);
     }
-    DESTROY(adt0);
-
-    // Capacity < obj_cnt
-    CREATE(adt1);
-    RESERVE(adt1, (size_t)((float)obj_cnt * 0.5f));
-    for(size_t i = 0; i < obj_cnt; i++) {
-        ctl_Stack_Push(adt1, (int)i);
-        assert(ctl_Stack_Back(adt1) == (int)i);
-        assert(ctl_Stack_At(adt1, i) == (int)i);
-        assert(ctl_Stack_Size(adt1) == i + 1);
-    }
-    DESTROY(adt1);
-
-    // Capacity == obj_cnt
-    CREATE(adt2);
-    RESERVE(adt2, obj_cnt);
-    for(size_t i = 0; i < obj_cnt; i++) {
-        ctl_Stack_Push(adt2, (int)i);
-        assert(ctl_Stack_Back(adt2) == (int)i);
-        assert(ctl_Stack_At(adt2, i) == (int)i);
-        assert(ctl_Stack_Size(adt2) == i + 1);
-    }
-    DESTROY(adt2);
+    DESTROY(adt);
+    printf("\t%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_Pop(void)
 {
-    // Capacity == 0
-    CREATE(adt);
-    const size_t obj_cnt = 50;
+    const size_t obj_cnt = 20;
+    const int back_data = 0xCAFE;
+    CREATE(adt, int);
+    // start = back = end: error
+    // start = back < end: error
+    // start < start+1 = back < end
+    RESERVE(adt, obj_cnt);
+    PUSH_BACK(adt, back_data);
+    assert(ctl_Stack_Pop(adt) == back_data);
+    assert(ctl_Stack_Size(adt) == 0);
+    // start < back < end
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    SET_BACK(adt, back_data);
+    assert(ctl_Stack_Pop(adt) == back_data);
+    assert(ctl_Stack_Size(adt) == (obj_cnt/2)-1);
+    // start < back = end
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt);
+    SET_BACK(adt, back_data);
+    assert(ctl_Stack_Pop(adt) == back_data);
+    assert(ctl_Stack_Size(adt) == obj_cnt-1);
+    // all
+    RESERVE(adt, obj_cnt);
     for(size_t i = 0; i < obj_cnt; i++) {
-        ctl_Stack_Push(adt, (int)i);
-        assert(ctl_Stack_Size(adt) == 1);
+        PUSH_BACK(adt, (int)i);
+    }
+    for(size_t i = obj_cnt-1; i > 0; i--) {
         assert(ctl_Stack_Pop(adt) == (int)i);
-        assert(ctl_Stack_Size(adt) == 0);
+        assert(ctl_Stack_Size(adt) == i);
     }
     DESTROY(adt);
+    printf("\t%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_Resize(void)
 {
-    CREATE(adt0);
-    size_t obj_cnt = 10;
-    // Initial state
-    for(size_t i = 0; i < obj_cnt; i++) {
-        ctl_Stack_Push(adt0, (int)i);
-    }
-    const size_t capacity = ctl_Stack_Capacity(adt0);
-    // new size > current size
-    ctl_Stack_Resize(adt0, 50);
-    for(size_t i = 0; i < obj_cnt; i++) {
-        assert(ctl_Stack_At(adt0, i) == (int)i);
-    }
-    const size_t new_capacity = ctl_Stack_Capacity(adt0);
-    assert(new_capacity > capacity);
-    // new size < current size
-    obj_cnt = 5;
-    ctl_Stack_Resize(adt0, obj_cnt);
-    for(size_t i = 0; i < obj_cnt; i++) {
-        assert(ctl_Stack_At(adt0, i) == (int)i);
-    }
-    assert(ctl_Stack_Size(adt0) == obj_cnt);
-    assert(new_capacity == ctl_Stack_Capacity(adt0));
-    // new size == current size
-    ctl_Stack_Resize(adt0, obj_cnt);
-    for(size_t i = 0; i < obj_cnt; i++) {
-        assert(ctl_Stack_At(adt0, i) == (int)i);
-    }
-    assert(ctl_Stack_Size(adt0) == obj_cnt);
-    assert(new_capacity == ctl_Stack_Capacity(adt0));
-    DESTROY(adt0);
+    const size_t obj_cnt = 20;
+    const int back_data = 0xCAFE;
+    CREATE(adt, int);
+    // 0 = size = resize = capacity
+    ctl_Stack_Resize(adt, 0);
+    assert(ctl_Stack_Size(adt) == 0);
+    assert(ctl_Stack_Capacity(adt) == 0);
+    // 0 = size = resize < capacity
+    RESERVE(adt, obj_cnt);
+    ctl_Stack_Resize(adt, 0);
+    assert(ctl_Stack_Size(adt) == 0);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    // 0 = size = capacity < resize
+    RESET(adt);
+    ctl_Stack_Resize(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == obj_cnt);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    // 0 = size < resize = capacity
+    RESERVE(adt, obj_cnt);
+    ctl_Stack_Resize(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == obj_cnt);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    // 0 = size < resize < capacity
+    RESERVE(adt, obj_cnt);
+    ctl_Stack_Resize(adt, obj_cnt/2);
+    assert(ctl_Stack_Size(adt) == obj_cnt/2);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    // 0 = size < capacity < resize
+    RESERVE(adt, obj_cnt/2);
+    ctl_Stack_Resize(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == obj_cnt);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    // 0 = resize < size = capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt);
+    ctl_Stack_Resize(adt, 0);
+    assert(ctl_Stack_Size(adt) == 0);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    // 0 = resize < size < capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    ctl_Stack_Resize(adt, 0);
+    assert(ctl_Stack_Size(adt) == 0);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    // 0 < size = resize = capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Resize(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == obj_cnt);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // 0 < size = resize < capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Resize(adt, obj_cnt/2);
+    assert(ctl_Stack_Size(adt) == obj_cnt/2);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // 0 < size = capacity < resize
+    RESERVE(adt, obj_cnt/2);
+    MOVE_BACK(adt, obj_cnt/2);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Resize(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == obj_cnt);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(AT(adt, (obj_cnt/2)-1) == back_data);
+    // 0 < size < resize = capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Resize(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == obj_cnt);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(AT(adt, (obj_cnt/2)-1) == back_data);
+    // 0 < size < resize < capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/4);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Resize(adt, obj_cnt/2);
+    assert(ctl_Stack_Size(adt) == obj_cnt/2);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(AT(adt, (obj_cnt/4)-1) == back_data);
+    // 0 < size < capacity < resize
+    RESERVE(adt, obj_cnt/2);
+    MOVE_BACK(adt, obj_cnt/4);
+    SET_BACK(adt, back_data);
+    ctl_Stack_Resize(adt, obj_cnt);
+    assert(ctl_Stack_Size(adt) == obj_cnt);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(AT(adt, (obj_cnt/4)-1) == back_data);
+    // 0 < resize < size = capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt);
+    SET_AT(adt, (obj_cnt/2)-1, back_data);
+    ctl_Stack_Resize(adt, obj_cnt/2);
+    assert(ctl_Stack_Size(adt) == obj_cnt/2);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    // 0 < resize < size < capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    SET_AT(adt, (obj_cnt/4)-1, back_data);
+    ctl_Stack_Resize(adt, obj_cnt/4);
+    assert(ctl_Stack_Size(adt) == obj_cnt/4);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
+    DESTROY(adt);
+    printf("\t%s: OK\n", __func__);
 }
 void TEST_ctl_Stack_ShrinkToFit(void)
 {
-    CREATE(adt0);
-    // 0 == size == capacity
-    size_t obj_cnt = 0;
-    ctl_Stack_ShrinkToFit(adt0);
-    assert(ctl_Stack_Size(adt0) == obj_cnt);
-    assert(ctl_Stack_Capacity(adt0) == obj_cnt);
-    // 0 < size == capacity
-    obj_cnt = 10;
-    ctl_Stack_Reserve(adt0, obj_cnt);
-    for(size_t i = 0; i < obj_cnt; i++) {
-        ctl_Stack_Push(adt0, (int)i);
-    }
-    ctl_Stack_ShrinkToFit(adt0);
-    assert(ctl_Stack_Size(adt0) == obj_cnt);
-    assert(ctl_Stack_Capacity(adt0) == obj_cnt);
-    for(size_t i = 0; i < obj_cnt; i++) {
-        assert(ctl_Stack_At(adt0, i) == (int)i);
-    }
+    const size_t obj_cnt = 20;
+    const int back_data = 0xCAFE;
+    CREATE(adt, int);
+    // 0 = size = capacity
+    ctl_Stack_ShrinkToFit(adt);
+    assert(ctl_Stack_Size(adt) == 0);
+    assert(ctl_Stack_Capacity(adt) == 0);
+    // 0 = size < capacity
+    RESERVE(adt, obj_cnt);
+    ctl_Stack_ShrinkToFit(adt);
+    assert(ctl_Stack_Size(adt) == 0);
+    assert(ctl_Stack_Capacity(adt) == 0);
+    // 0 < size = capacity
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt);
+    SET_BACK(adt, back_data);
+    ctl_Stack_ShrinkToFit(adt);
+    assert(ctl_Stack_Size(adt) == obj_cnt);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt);
+    assert(BACK(adt) == back_data);
     // 0 < size < capacity
-    ctl_Stack_Reserve(adt0, obj_cnt * 2);
-    ctl_Stack_ShrinkToFit(adt0);
-    assert(ctl_Stack_Size(adt0) == obj_cnt);
-    assert(ctl_Stack_Capacity(adt0) == obj_cnt);
-    for(size_t i = 0; i < obj_cnt; i++) {
-        assert(ctl_Stack_At(adt0, i) == (int)i);
-    }
-    DESTROY(adt0);
+    RESERVE(adt, obj_cnt);
+    MOVE_BACK(adt, obj_cnt/2);
+    SET_BACK(adt, back_data);
+    ctl_Stack_ShrinkToFit(adt);
+    assert(ctl_Stack_Size(adt) == obj_cnt/2);
+    assert(ctl_Stack_Capacity(adt) == obj_cnt/2);
+    assert(BACK(adt) == back_data);
+    DESTROY(adt);
+    printf("\t%s: OK\n", __func__);
 }
