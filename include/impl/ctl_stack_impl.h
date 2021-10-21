@@ -34,21 +34,21 @@
  *          back
  *
  * 1)
- *    +-------+   start < back < end
- *    |///|   |   0 < size < capacity
- *    +-------+
- * 2)
- *    +-------+   start < back = end
- *    |///////|   0 < size = capacity
- *    +-------+
- * 3)
- *    +-------+   start = back < end
- *    ||      |   0 = size < capacity
- *    +-------+
- * 4)
- *    +           start = back = end
- *    |           0 = size = capacity
- *    +
+ *    +-------+  |  start < back < end   |  push: back++
+ *    |///|   |  |  0 < size < capacity  |  pop : back--
+ *    +-------+  |                       |
+ * 2)            |                       |
+ *    +-------+  |  start < back = end   |  push: grow -> back++
+ *    |///////|  |  0 < size = capacity  |  pop : back--
+ *    +-------+  |                       |
+ * 3)            |                       |
+ *    +-------+  |  start = back < end   |  push: back++
+ *    ||      |  |  0 = size < capacity  |  pop : error
+ *    +-------+  |                       |
+ * 4)            |                       |
+ *    +          |  start = back = end   |  push: grow -> back++
+ *    |          |  0 = size = capacity  |  pop : error
+ *    +          |                       |
  *
  * size > 0       : {1, 2}    <=> start < back
  * size = 0       : {3, 4}    <=> start = back
