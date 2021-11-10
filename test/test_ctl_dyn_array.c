@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h> // malloc(), free(), NULL
+#include <stdio.h>
 // CPL
 #include <ctl.h>
 #include <ctl_dyn_array.h>
@@ -36,24 +37,24 @@ CTL_DECLARE(CTL_DYN_ARRAY, CTL_DYN_ARRAY_TYPES);
 CTL_DEFINE(CTL_DYN_ARRAY, CTL_DYN_ARRAY_TYPES)
 
 #define CREATE(array)                                                          \
-    CTL_DYN_ARRAY(int) * array = malloc(sizeof(*array));                       \
-    assert(array != NULL);                                                     \
-    array->start = array->front = array->back = array->end = NULL
+    CTL_DYN_ARRAY(int) * (array) = malloc(sizeof(*(array)));                   \
+    assert((array) != NULL);                                                   \
+    (array)->start = (array)->back = (array)->end = NULL
 
 #define DESTROY(array)                                                         \
-    free(array->start);                                                        \
+    free((array)->start);                                                      \
     free(array);                                                               \
-    array = NULL
+    (array) = NULL
 
 #define RESERVE(array, cnt)                                                    \
-    array->start = malloc(sizeof(*array->front) * (cnt));                      \
-    assert(array->start != NULL);                                              \
-    array->back = array->front = array->start;                                 \
-    array->end  = array->start + (cnt)
+    array->start = malloc(sizeof(*(array)->start) * (cnt));                    \
+    assert((array)->start != NULL);                                            \
+    (array)->back = (array)->start;                                            \
+    (array)->end  = (array)->start + (cnt)
 
 #define CLEAR(array)                                                           \
-    free(array->start);                                                        \
-    array->start = array->front = array->back = array->end = NULL
+    free((array)->start);                                                      \
+    (array)->start = (array)->back = (array)->end = NULL
 /*==============================================================================
     FUNCTION DECLARATION
 ==============================================================================*/
@@ -69,8 +70,6 @@ void TEST_ctl_DynArray_Back(void);
 void TEST_ctl_DynArray_PushBack(void);
 void TEST_ctl_DynArray_PopBack(void);
 void TEST_ctl_DynArray_Front(void);
-void TEST_ctl_DynArray_PushFront(void);
-void TEST_ctl_DynArray_PopFront(void);
 void TEST_ctl_DynArray_Insert(void);
 void TEST_ctl_DynArray_Resize(void);
 void TEST_ctl_DynArray_ShrinkToFit(void);
@@ -95,8 +94,6 @@ void TEST_CTL_DYN_ARRAY(void)
     TEST_ctl_DynArray_PushBack();
     TEST_ctl_DynArray_PopBack();
     TEST_ctl_DynArray_Front();
-    TEST_ctl_DynArray_PushFront();
-    TEST_ctl_DynArray_PopFront();
     TEST_ctl_DynArray_Insert();
     TEST_ctl_DynArray_Resize();
     TEST_ctl_DynArray_ShrinkToFit();
@@ -109,7 +106,6 @@ void TEST_ctl_DynArray_Create(void)
 {
     CTL_DYN_ARRAY(int) * array = ctl_DynArray_Create(array);
     assert(array != NULL);
-    assert(array->start == array->front);
     assert(array->start == array->back);
     assert(array->start == array->end);
     DESTROY(array);
@@ -127,8 +123,8 @@ void TEST_ctl_DynArray_Size(void)
     assert(ctl_DynArray_Size(array) == 0);
     RESERVE(array, obj_cnt);
     for(size_t i = 0; i < obj_cnt; i++) {
-        assert(ctl_DynArray_Size(array) == i);
         array->back++;
+        assert(ctl_DynArray_Size(array) == i+1);
     }
     DESTROY(array);
 }
@@ -291,58 +287,9 @@ void TEST_ctl_DynArray_Front(void)
     const size_t obj_cnt = 5;
     RESERVE(array, obj_cnt);
     for(size_t i = 0; i < obj_cnt; i++) {
-        *array->front = (int)i;
-        array->back   = array->front + 1;
+        *array->start = (int)i;
+        array->back   = array->start + 1;
         assert(ctl_DynArray_Front(array) == (int)i);
-        array->front++;
-    }
-    DESTROY(array);
-}
-void TEST_ctl_DynArray_PushFront(void)
-{
-    const size_t obj_cnt = 50;
-    // Capacity == 0
-    CREATE(array0);
-    for(size_t i = 0; i < obj_cnt; i++) {
-        ctl_DynArray_PushFront(array0, (int)i);
-        assert(ctl_DynArray_Front(array0) == (int)i);
-        assert(ctl_DynArray_At(array0, 0) == (int)i);
-        assert(ctl_DynArray_Size(array0) == i + 1);
-    }
-    DESTROY(array0);
-
-    // Capacity < obj_cnt
-    CREATE(array1);
-    RESERVE(array1, (size_t)((float)obj_cnt * 0.5f));
-    for(size_t i = 0; i < obj_cnt; i++) {
-        ctl_DynArray_PushFront(array1, (int)i);
-        assert(ctl_DynArray_Front(array1) == (int)i);
-        assert(ctl_DynArray_At(array1, 0) == (int)i);
-        assert(ctl_DynArray_Size(array1) == i + 1);
-    }
-    DESTROY(array1);
-
-    // Capacity == obj_cnt
-    CREATE(array2);
-    RESERVE(array2, obj_cnt);
-    for(size_t i = 0; i < obj_cnt; i++) {
-        ctl_DynArray_PushFront(array2, (int)i);
-        assert(ctl_DynArray_Front(array2) == (int)i);
-        assert(ctl_DynArray_At(array2, 0) == (int)i);
-        assert(ctl_DynArray_Size(array2) == i + 1);
-    }
-    DESTROY(array2);
-}
-void TEST_ctl_DynArray_PopFront(void)
-{
-    CREATE(array);
-    const size_t obj_cnt = 50;
-    RESERVE(array, obj_cnt);
-    for(size_t i = 0; i < obj_cnt; i++) {
-        ctl_DynArray_PushFront(array, (int)i);
-        assert(ctl_DynArray_Size(array) == 1);
-        assert(ctl_DynArray_PopFront(array) == (int)i);
-        assert(ctl_DynArray_Size(array) == 0);
     }
     DESTROY(array);
 }

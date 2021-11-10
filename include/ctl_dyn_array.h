@@ -128,30 +128,6 @@
 #define ctl_DynArray_Insert(array, index, data)                                \
     CTL_DYN_ARRAY_FUNC(array, Insert)(array, index, data)
 /*------------------------------------------------------------------------------
-    ctl_DynArray_PushFront()
-------------------------------------------------------------------------------*/
-/**
- * Inserts \p{data} at the beginning of an \p{array}.
- *
- * @param[in,out] array : Pointer to the array.
- * @param[in]     data  : Element to insert.
- *
- * @return
- * - @success: `true`
- * - @failure: `false`
- *
- * @warning
- * - \p{array} must be a valid pointer to an array created with
- * ctl_DynArray_Create().
- *
- * @example{
- *  CTL_DYN_ARRAY(int) * array = ctl_DynArray_Create(array);
- *  ctl_DynArray_PushFront(array, 7);
- * }
- */
-#define ctl_DynArray_PushFront(array, data)                                    \
-    CTL_DYN_ARRAY_FUNC(array, PushFront)(array, data)
-/*------------------------------------------------------------------------------
     ctl_DynArray_PushBack()
 ------------------------------------------------------------------------------*/
 /**
@@ -175,30 +151,6 @@
  */
 #define ctl_DynArray_PushBack(array, data)                                     \
     CTL_DYN_ARRAY_FUNC(array, PushBack)(array, data)
-/*------------------------------------------------------------------------------
-    ctl_DynArray_PopFront()
-------------------------------------------------------------------------------*/
-/**
- * Removes the first element from an \p{array} and returns it.
- *
- * @param[in,out] array : Pointer to the array.
- *
- * @return The first element of \p{array}.
- *
- * @warning
- * - \p{array} must be a valid pointer to an array created with
- * ctl_DynArray_Create().
- * - ctl_DynArray_Size() must be > 0.
- *
- * @example{
- *  CTL_DYN_ARRAY(int) * array = ctl_DynArray_Create(array);
- *  ctl_DynArray_PushBack(array, 7);
- *  ctl_DynArray_PushBack(array, 13);
- *  int x = ctl_DynArray_PopFront(array); // x = 7
- * }
- */
-#define ctl_DynArray_PopFront(array)                                           \
-    CTL_DYN_ARRAY_FUNC(array, PopFront)(array)
 /*------------------------------------------------------------------------------
     ctl_DynArray_PopBack()
 ------------------------------------------------------------------------------*/
