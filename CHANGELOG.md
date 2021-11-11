@@ -13,6 +13,21 @@ which says in its summary:
 
 ## [Unreleased]
 
+## [0.3.0]
+
+(2021-11-11)
+
+### Removed
+
+- `ctl_dyn_array.h`:
+  - `ctl_DynArray_PushFront()`.
+  - `ctl_DynArray_PopFront()`.
+
+### Fixed
+
+- Bug in `ctl_Stack_ShrinkToFit()` where `realloc(0)` was called.
+- Bug in `ctl_DynArray_ShrinkToFit()` where `realloc(0)` was called.
+
 ## [0.2.0]
 
 (2021-08-27)
