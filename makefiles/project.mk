@@ -1,9 +1,10 @@
+# SPDX-License-Identifier: 0BSD
 ################################################################################
 # PROJECT
 #
-# [R]: Single value variable can be redefined in other makefiles
-# [+]: Values can be added to the variable in other makefiles
-# [X]: Variable must not be redefined nor values be added to it
+# [R]: Variable can be redefined with a single value.
+# [+]: Variable can be redefined and/or have values added to it.
+# [X]: Variable must not be redefined nor have values added to it.
 ################################################################################
 # Project name: must not contain spaces                                      [R]
 PROJECT := untitled
@@ -74,9 +75,7 @@ libdir      = $(exec_prefix)/$(LIB_FOLDER)
 # EXTERNAL
 ################################################################################
 # Target to build tests                                                      [X]
-# Expand to $(TEST_PATH)empty_target if $(TEST_PATH) points to an existing
-# folder or to `empty_target` otherwise.
-TEST_TARGET = $(wildcard $(TEST_PATH))empty_target
+TEST_TARGET = $(wildcard $(TEST_PATH))
 # List of directories containing header files(*.h)                           [+]
 INC_DIRS = $(INC_PATH)
 # List of directories containing source files(*.c)                           [+]
